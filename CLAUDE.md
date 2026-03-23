@@ -85,26 +85,24 @@ PatternBridge/
 - **pattern_output/pdf_writer.py** (848 lines) — `PDFWriter` tiles large patterns across Letter/A4 pages with registration marks, overlap zones, assembly instructions, optional cover page. Requires `reportlab`.
 - **bridge/pattern_bridge.py** (461 lines) — `PatternBridge` orchestrator with `run()`, `from_image()`, `scale()`, `export()`, `analyze()` methods. `PipelineResult` tracks pieces through all stages.
 
-### Using stub dependencies
-- **pattern_geometry/encoder.py** (524 lines) — Code is complete and **runs against stub implementations** of the four Geometric-to-Binary classes. Stubs provide the correct API surface but simplified logic. For production fidelity, replace these stubs with the real implementations from [Geometric-to-Binary-Computational-Bridge](https://github.com/JinnZ2/Geometric-to-Binary-Computational-Bridge):
-  - `pattern_geometry/geometric_encoder.py` — token validation and decomposition
-  - `pattern_geometry/octahedral_state.py` — 8-vertex octahedral state mapping
-  - `pattern_geometry/spatial_grid.py` — adaptive spatial partitioning (stub is no-op)
-  - `pattern_geometry/symmetry_detector.py` — reflective/rotational symmetry detection
+- **pattern_geometry/encoder.py** (524 lines) — Code is complete and **runs against real implementations** of the four Geometric-to-Binary classes ported from the sibling repo.
+- **pattern_geometry/geometric_encoder.py** — Bidirectional token↔binary encoding with round-trip validation. Supports nested operators (`||`), colon alias (`:`).
+- **pattern_geometry/octahedral_state.py** — 8-vertex cubic coordinate states with inversion, distance, and dot product operations.
+- **pattern_geometry/spatial_grid.py** — Octree-based adaptive spatial decomposition + curvature-adaptive boundary point refinement.
+- **pattern_geometry/symmetry_detector.py** — Reflective and rotational symmetry detection using Rodrigues' rotation formula.
+- **pattern_vision/classifier.py** — CNN multi-head classifier (ResNet-18 backbone). Predicts garment type, piece name, fold/grain lines, notch/dart counts. Requires `torch`/`torchvision` (import-guarded).
+- **pattern_output/data_export.py** — JSON/dict export with computed properties, manifest generation, and full pattern set export.
+- **patterns/__init__.py** — Synthetic sample pattern data (8 samples: pants front/back, bodice front/back, skirt front, sock sole, hat crown, sundress front/back) with vision results and measurements.
+- **examples/sundress.py** — Full pipeline: sample data → boundary → encode → scale → SVG + PDF + JSON.
+- **examples/socks.py** — Single-piece pipeline with symmetry detection.
+- **examples/hat.py** — Multi-cut piece with token introspection.
 
 ### Not yet created
 | Planned file | Purpose |
 |---|---|
-| `pattern_vision/classifier.py` | CNN multi-head classifier |
 | `pattern_vision/dataset.py` | Pattern image dataset loader |
-| `pattern_vision/train.py` | Training loop |
-| `pattern_geometry/symmetry.py` | SymmetryDetector wrapper |
-| `pattern_geometry/grid.py` | SpatialGrid wrapper |
-| `pattern_output/data_export.py` | JSON/Python dict export (partially in bridge) |
-| `patterns/` | Sample pattern images |
-| `examples/sundress.py` | Sundress example |
-| `examples/socks.py` | Sock pattern example |
-| `examples/hat.py` | Hat pattern example |
+| `pattern_vision/train.py` | Training loop for classifier |
+| `weights/` | Trained classifier weights |
 
 ---
 
@@ -270,7 +268,7 @@ Geometric tokens use the Geometric-to-Binary framework:
 ## Blockers and Next Steps
 
 ### Resolved blockers
-1. ~~Geometric-to-Binary classes not bundled~~ — **Resolved**: stub implementations added. Replace with real implementations for production.
+1. ~~Geometric-to-Binary classes not bundled~~ — **Resolved**: real implementations ported from sibling repo (GeometricEncoder, OctahedralState, SpatialGrid, SymmetryDetector).
 2. ~~No `__init__.py` files~~ — **Resolved**: all four packages have `__init__.py`.
 3. ~~No `requirements.txt`~~ — **Resolved**: `requirements.txt` created.
 4. ~~Cross-package relative imports broke~~ — **Resolved**: converted `from ..package` to absolute `from package` imports.
@@ -283,11 +281,14 @@ Geometric tokens use the Geometric-to-Binary framework:
 11. ~~`scaler.py` `np.array` from int tuples gave int64 dtype~~ — **Resolved**: explicit `dtype=np.float64`.
 
 ### Priority next steps
-1. Replace Geometric-to-Binary stub classes with real implementations from the sibling repo
+1. ~~Replace Geometric-to-Binary stub classes with real implementations~~ — **Done**
 2. Test vision layer against real pattern images
-3. Add sample pattern images to `patterns/` directory
-4. Create additional example scripts (sundress, socks, hat)
-5. Add CNN classifier (`pattern_vision/classifier.py`) for automated piece detection
+3. ~~Add sample pattern data to `patterns/` directory~~ — **Done** (synthetic samples)
+4. ~~Create additional example scripts (sundress, socks, hat)~~ — **Done**
+5. ~~Add CNN classifier (`pattern_vision/classifier.py`)~~ — **Done** (needs training data + weights)
+6. ~~Add JSON/data export module~~ — **Done** (`pattern_output/data_export.py`)
+7. Create `pattern_vision/dataset.py` and `train.py` for classifier training
+8. Collect and curate real pattern images for training and testing
 
 ---
 
