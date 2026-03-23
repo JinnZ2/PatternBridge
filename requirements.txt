@@ -16,3 +16,7 @@ reportlab>=4.0.0
 
 # Optional: GPT-4o support
 # openai>=1.0.0
+
+# Optional: CNN classifier
+# torch>=2.0.0
+# torchvision>=0.15.0
