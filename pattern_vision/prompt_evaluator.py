@@ -13,7 +13,7 @@ import json
 import re
 from pathlib import Path
 
-from .rubric import PatternRubric, interpret_score
+from .rubic import PatternRubric, interpret_score
 
 
 SYSTEM_PROMPT = """You are a sewing pattern analysis system. You analyze images of

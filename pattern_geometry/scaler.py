@@ -113,12 +113,14 @@ STANDARD_SIZE_0: dict[str, float] = {
     Measure.WAIST:          24.0,
     Measure.HIP:            33.5,
     Measure.THIGH:          19.0,
+    Measure.BICEP:          10.0,
     Measure.INSEAM:         28.5,
     Measure.RISE_FRONT:      9.0,
     Measure.RISE_BACK:      12.5,
     Measure.TORSO_FRONT:    15.0,
     Measure.TORSO_BACK:     15.5,
     Measure.SHOULDER_WIDTH: 14.0,
+    Measure.BACK_WIDTH:     12.5,
 }
 
 STANDARD_SIZE_36_36: dict[str, float] = {
@@ -126,12 +128,14 @@ STANDARD_SIZE_36_36: dict[str, float] = {
     Measure.WAIST:          36.0,
     Measure.HIP:            38.0,
     Measure.THIGH:          22.0,
+    Measure.BICEP:          13.5,
     Measure.INSEAM:         36.0,
     Measure.RISE_FRONT:     10.5,
     Measure.RISE_BACK:      14.0,
     Measure.TORSO_FRONT:    17.0,
     Measure.TORSO_BACK:     18.0,
     Measure.SHOULDER_WIDTH: 18.0,
+    Measure.BACK_WIDTH:     15.5,
 }
 
 
@@ -406,7 +410,7 @@ class PatternScaler:
         if not points:
             return points, []
 
-        points_arr = np.array(points)
+        points_arr = np.array(points, dtype=np.float64)
         movements = []
 
         # Identify boundary regions by their relative position

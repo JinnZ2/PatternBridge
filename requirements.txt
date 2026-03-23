@@ -1,0 +1,18 @@
+# PatternBridge dependencies
+# Python 3.10+ required
+
+# Vision layer
+anthropic>=0.30.0
+Pillow>=10.0.0
+
+# Geometry layer
+numpy>=1.24.0
+scipy>=1.10.0
+shapely>=2.0.0
+
+# Output layer
+svgwrite>=1.4.0
+reportlab>=4.0.0
+
+# Optional: GPT-4o support
+# openai>=1.0.0

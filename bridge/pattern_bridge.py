@@ -32,19 +32,19 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from ..pattern_vision.rubric import PatternRubric
-from ..pattern_vision.prompt_evaluator import PatternPromptEvaluator
-from ..pattern_geometry.piece import PatternPiece
-from ..pattern_geometry.encoder import PatternEncoder
-from ..pattern_geometry.scaler import (
+from pattern_vision.rubic import PatternRubric
+from pattern_vision.prompt_evaluator import PatternPromptEvaluator
+from pattern_geometry.piece import PatternPiece
+from pattern_geometry.encoder import PatternEncoder
+from pattern_geometry.scaler import (
     PatternScaler,
     PROFILE_ZERO_MUSCULAR,
     PROFILE_TALL_36_36,
     STANDARD_SIZE_0,
     STANDARD_SIZE_36_36,
 )
-from ..pattern_output.svg_writer import SVGWriter
-from ..pattern_output.pdf_writer import PDFWriter
+from pattern_output.svg_writer import SVGWriter
+from pattern_output.pdf_writer import PDFWriter
 
 
 # ── Built-in measurement profiles ────────────────────────────────────────────
@@ -160,7 +160,7 @@ class PatternBridge:
         self.encoder = PatternEncoder() if encode else None
 
         # Output layer
-        from ..pattern_output.pdf_writer import PAGE_LETTER, PAGE_A4
+        from pattern_output.pdf_writer import PAGE_LETTER, PAGE_A4
         pdf_page = PAGE_LETTER if page_size == "letter" else PAGE_A4
         self.svg_writer = SVGWriter(px_per_inch=px_per_inch)
         self.pdf_writer = PDFWriter(page_size=pdf_page)

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "patternbridge"
+version = "0.1.0"
+description = "Parametric sewing pattern generation from images"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=0.30.0",
+    "Pillow>=10.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "shapely>=2.0.0",
+    "svgwrite>=1.4.0",
+    "reportlab>=4.0.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0"]
+dev = ["pytest>=7.0.0"]
+
+[tool.setuptools.packages.find]
+include = [
+    "pattern_vision*",
+    "pattern_geometry*",
+    "pattern_output*",
+    "bridge*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

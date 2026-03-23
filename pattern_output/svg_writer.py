@@ -30,7 +30,7 @@ except ImportError:
         "Install with: pip install svgwrite"
     )
 
-from ..pattern_geometry.piece import PatternPiece, Point, Notch, Dart
+from pattern_geometry.piece import PatternPiece, Point, Notch, Dart
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -419,11 +419,11 @@ class SVGWriter:
             right_x = px + ny * NOTCH_SIZE_PX * 0.4
             right_y = py - nx * NOTCH_SIZE_PX * 0.4
 
-            points_str = (
-                f"{tip_x:.1f},{tip_y:.1f} "
-                f"{left_x:.1f},{left_y:.1f} "
-                f"{right_x:.1f},{right_y:.1f}"
-            )
+            notch_pts = [
+                (tip_x, tip_y),
+                (left_x, left_y),
+                (right_x, right_y),
+            ]
 
             if notch.notch_type == "double":
                 # Two notches side by side
@@ -433,22 +433,20 @@ class SVGWriter:
                     oy = py - sign * nx * offset
                     t_x = ox + nx * NOTCH_SIZE_PX
                     t_y = oy + ny * NOTCH_SIZE_PX
-                    pts_str = (
-                        f"{t_x:.1f},{t_y:.1f} "
-                        f"{ox - ny * NOTCH_SIZE_PX * 0.3:.1f},"
-                        f"{oy + nx * NOTCH_SIZE_PX * 0.3:.1f} "
-                        f"{ox + ny * NOTCH_SIZE_PX * 0.3:.1f},"
-                        f"{oy - nx * NOTCH_SIZE_PX * 0.3:.1f}"
-                    )
+                    double_pts = [
+                        (t_x, t_y),
+                        (ox - ny * NOTCH_SIZE_PX * 0.3, oy + nx * NOTCH_SIZE_PX * 0.3),
+                        (ox + ny * NOTCH_SIZE_PX * 0.3, oy - nx * NOTCH_SIZE_PX * 0.3),
+                    ]
                     g.add(dwg.polygon(
-                        points=pts_str,
+                        points=double_pts,
                         fill=NOTCH_FILL,
                         stroke=NOTCH_STROKE,
                         stroke_width=0.5,
                     ))
             else:
                 g.add(dwg.polygon(
-                    points=points_str,
+                    points=notch_pts,
                     fill=NOTCH_FILL,
                     stroke=NOTCH_STROKE,
                     stroke_width=0.5,
@@ -665,12 +663,7 @@ class SVGWriter:
             to_pt[1] - uy * size + py * size * 0.4,
         )
 
-        pts_str = (
-            f"{tip[0]:.1f},{tip[1]:.1f} "
-            f"{left[0]:.1f},{left[1]:.1f} "
-            f"{right[0]:.1f},{right[1]:.1f}"
-        )
-        return dwg.polygon(points=pts_str, fill=color)
+        return dwg.polygon(points=[tip, left, right], fill=color)
 
     def _label_text(
         self,
