@@ -38,11 +38,12 @@ PatternBridge/
 ├── pattern_geometry/               # Geometric encoding layer
 │   ├── __init__.py
 │   ├── piece.py                    # PatternPiece dataclass — core data structure
+│   ├── boundary.py                 # Template-based boundary generation (vision→geometry bridge)
 │   ├── encoder.py                  # Boundary → geometric token encoding
 │   ├── scaler.py                   # Parametric scaling with grading rules
 │   ├── geometric_encoder.py        # Stub — GeometricEncoder (replace with real impl)
 │   ├── octahedral_state.py         # Stub — OctahedralState (replace with real impl)
-│   ├── spatial_grid.py             # Stub — SpatialGrid (replace with real impl)
+│   ├── spatial_grid.py             # SpatialGrid — curvature-adaptive point refinement
 │   └── symmetry_detector.py        # Stub — SymmetryDetector (replace with real impl)
 │
 ├── pattern_output/                 # Output layer
@@ -54,10 +55,11 @@ PatternBridge/
 │   ├── __init__.py
 │   └── pattern_bridge.py           # End-to-end orchestrator
 │
-├── tests/                          # Unit tests (94 tests, all passing)
+├── tests/                          # Unit tests (122 tests, all passing)
 │   ├── conftest.py                 # Shared fixtures (pieces, vision results)
 │   ├── test_vision.py              # Rubric, scoring, prompt evaluator
 │   ├── test_geometry.py            # PatternPiece, encoder, scaler
+│   ├── test_boundary.py            # Boundary generation, templates, full pipeline
 │   ├── test_output.py              # SVG and PDF writers
 │   └── test_pipeline.py            # End-to-end pipeline wiring
 │
@@ -141,6 +143,19 @@ result = bridge.run(
 ```
 
 Individual pipeline stages: `from_image()` → `scale()` → `export()`.
+
+### generate_boundary (`pattern_geometry/boundary.py`)
+Bridges vision output (no coordinates) to geometry layer (needs boundary points):
+
+```python
+from pattern_geometry.boundary import generate_boundary
+
+piece = PatternPiece.from_vision_result(vision_dict)
+generate_boundary(piece, measurements={"waist": 12, "hip": 13, "inseam": 28})
+# piece.boundary_points, grain_line, fold_line, notches now populated
+```
+
+Templates for: pants front/back, bodice front/back, skirt, sock, hat crown. Falls back to rectangle for unknown garment types.
 
 ### PatternScaler (`pattern_geometry/scaler.py`)
 Built-in measurement profiles:
@@ -244,10 +259,11 @@ Geometric tokens use the Geometric-to-Binary framework:
 ## Pipeline Stages
 
 1. **Vision** — `PatternPromptEvaluator.evaluate(image_path)` → list of piece dicts with features scored against the 7-category rubric
-2. **Structuring** — `PatternPiece.from_vision_result(piece_dict)` → typed dataclass
-3. **Encoding** — `PatternEncoder.encode(piece)` → fills `encoded_tokens` (runs against stubs; replace with real Geometric-to-Binary classes for production)
-4. **Scaling** — `PatternScaler.scale(piece)` → new `PatternPiece` at target measurements
-5. **Output** — `SVGWriter.save()` / `PDFWriter.save()` / `piece.to_json()`
+2. **Structuring** — `PatternPiece.from_vision_result(piece_dict)` → typed dataclass (no boundary points yet)
+3. **Boundary** — `generate_boundary(piece, measurements)` → fills `boundary_points`, `grain_line`, `fold_line`, `notches` from garment-type templates
+4. **Encoding** — `PatternEncoder.encode(piece)` → fills `encoded_tokens` (runs against stubs; replace with real Geometric-to-Binary classes for production)
+5. **Scaling** — `PatternScaler.scale(piece)` → new `PatternPiece` at target measurements
+6. **Output** — `SVGWriter.save()` / `PDFWriter.save()` / `piece.to_json()`
 
 ---
 
@@ -260,6 +276,11 @@ Geometric tokens use the Geometric-to-Binary framework:
 4. ~~Cross-package relative imports broke~~ — **Resolved**: converted `from ..package` to absolute `from package` imports.
 5. ~~`prompt_evaluator.py` imported `.rubric` instead of `.rubic`~~ — **Resolved**: fixed to match actual filename.
 6. ~~`encoder.py` called `_normalize_points()` which raised NotImplementedError~~ — **Resolved**: changed to call `_encode_points_at_indices()`.
+7. ~~No boundary extraction between vision and geometry~~ — **Resolved**: `boundary.py` generates template-based boundary points from garment type and measurements.
+8. ~~`STANDARD_SIZE_0` and `STANDARD_SIZE_36_36` missing `bicep` and `back_width`~~ — **Resolved**: added missing keys, eliminating 14"+ phantom deltas.
+9. ~~`SpatialGrid.refine()` was a no-op~~ — **Resolved**: now does curvature-adaptive midpoint insertion.
+10. ~~`svg_writer.py` passed strings to `dwg.polygon(points=...)`~~ — **Resolved**: uses list of tuples per svgwrite API.
+11. ~~`scaler.py` `np.array` from int tuples gave int64 dtype~~ — **Resolved**: explicit `dtype=np.float64`.
 
 ### Priority next steps
 1. Replace Geometric-to-Binary stub classes with real implementations from the sibling repo
