@@ -34,7 +34,7 @@ except ImportError:
         "Install with: pip install reportlab"
     )
 
-from ..pattern_geometry.piece import PatternPiece, Point
+from pattern_geometry.piece import PatternPiece, Point
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────

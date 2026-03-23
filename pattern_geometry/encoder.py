@@ -115,7 +115,7 @@ class PatternEncoder:
         selected = self._select_encoding_points(working_points)
 
         # Step 3: Normalize to octahedral coordinate space
-        normalized = self._normalize_points(selected)
+        normalized = self._encode_points_at_indices(working_points, selected)
 
         # Step 4: Map each point to an OctahedralState
         states = self._points_to_states(normalized)

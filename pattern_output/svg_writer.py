@@ -30,7 +30,7 @@ except ImportError:
         "Install with: pip install svgwrite"
     )
 
-from ..pattern_geometry.piece import PatternPiece, Point, Notch, Dart
+from pattern_geometry.piece import PatternPiece, Point, Notch, Dart
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────

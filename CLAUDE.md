@@ -26,21 +26,31 @@ PatternBridge/
 ├── CLAUDE.md                       # This file — project guide for AI assistants
 ├── README.md                       # Brief project description
 ├── LICENSE                         # Apache 2.0
+├── requirements.txt                # Python dependencies
+├── .gitignore                      # Git ignore rules
 │
 ├── pattern_vision/                 # Image analysis layer
+│   ├── __init__.py
 │   ├── rubic.py                    # 7-category pattern scoring rubric (100 pts)
 │   └── prompt_evaluator.py         # Vision LLM analysis (Anthropic / OpenAI)
 │
 ├── pattern_geometry/               # Geometric encoding layer
+│   ├── __init__.py
 │   ├── piece.py                    # PatternPiece dataclass — core data structure
 │   ├── encoder.py                  # Boundary → geometric token encoding
-│   └── scaler.py                   # Parametric scaling with grading rules
+│   ├── scaler.py                   # Parametric scaling with grading rules
+│   ├── geometric_encoder.py        # Stub — GeometricEncoder (replace with real impl)
+│   ├── octahedral_state.py         # Stub — OctahedralState (replace with real impl)
+│   ├── spatial_grid.py             # Stub — SpatialGrid (replace with real impl)
+│   └── symmetry_detector.py        # Stub — SymmetryDetector (replace with real impl)
 │
 ├── pattern_output/                 # Output layer
+│   ├── __init__.py
 │   ├── svg_writer.py               # SVG at real-world scale (96 px/inch)
 │   └── pdf_writer.py               # Tiled PDF for home printers
 │
 └── bridge/
+    ├── __init__.py
     └── pattern_bridge.py           # End-to-end orchestrator
 ```
 
@@ -61,21 +71,16 @@ PatternBridge/
 - **pattern_output/pdf_writer.py** (848 lines) — `PDFWriter` tiles large patterns across Letter/A4 pages with registration marks, overlap zones, assembly instructions, optional cover page. Requires `reportlab`.
 - **bridge/pattern_bridge.py** (461 lines) — `PatternBridge` orchestrator with `run()`, `from_image()`, `scale()`, `export()`, `analyze()` methods. `PipelineResult` tracks pieces through all stages.
 
-### Blocked — missing dependencies
-- **pattern_geometry/encoder.py** (524 lines) — Code is complete but **cannot run**. Imports four classes from Geometric-to-Binary that are not in this repo:
-  ```python
-  from .geometric_encoder import GeometricEncoder
-  from .octahedral_state import OctahedralState
-  from .spatial_grid import SpatialGrid
-  from .symmetry_detector import SymmetryDetector
-  ```
-  These must be copied from [Geometric-to-Binary-Computational-Bridge](https://github.com/JinnZ2/Geometric-to-Binary-Computational-Bridge) into `pattern_geometry/`.
+### Using stub dependencies
+- **pattern_geometry/encoder.py** (524 lines) — Code is complete and **runs against stub implementations** of the four Geometric-to-Binary classes. Stubs provide the correct API surface but simplified logic. For production fidelity, replace these stubs with the real implementations from [Geometric-to-Binary-Computational-Bridge](https://github.com/JinnZ2/Geometric-to-Binary-Computational-Bridge):
+  - `pattern_geometry/geometric_encoder.py` — token validation and decomposition
+  - `pattern_geometry/octahedral_state.py` — 8-vertex octahedral state mapping
+  - `pattern_geometry/spatial_grid.py` — adaptive spatial partitioning (stub is no-op)
+  - `pattern_geometry/symmetry_detector.py` — reflective/rotational symmetry detection
 
 ### Not yet created
 | Planned file | Purpose |
 |---|---|
-| `__init__.py` (all packages) | Package initialization — required for imports |
-| `requirements.txt` | Dependency specification |
 | `setup.py` / `pyproject.toml` | Package configuration |
 | `pattern_vision/classifier.py` | CNN multi-head classifier |
 | `pattern_vision/dataset.py` | Pattern image dataset loader |
@@ -86,7 +91,6 @@ PatternBridge/
 | `tests/` | Unit tests (test_vision, test_geometry, test_output) |
 | `examples/` | Usage examples (pants, sundress, socks, hat) |
 | `patterns/` | Sample pattern images |
-| `.gitignore` | Git ignore rules |
 
 ---
 
@@ -201,7 +205,7 @@ Geometric tokens use the Geometric-to-Binary framework:
 
 1. **Vision** — `PatternPromptEvaluator.evaluate(image_path)` → list of piece dicts with features scored against the 7-category rubric
 2. **Structuring** — `PatternPiece.from_vision_result(piece_dict)` → typed dataclass
-3. **Encoding** — `PatternEncoder.encode(piece)` → fills `encoded_tokens` (BLOCKED: needs Geometric-to-Binary classes)
+3. **Encoding** — `PatternEncoder.encode(piece)` → fills `encoded_tokens` (runs against stubs; replace with real Geometric-to-Binary classes for production)
 4. **Scaling** — `PatternScaler.scale(piece)` → new `PatternPiece` at target measurements
 5. **Output** — `SVGWriter.save()` / `PDFWriter.save()` / `piece.to_json()`
 
@@ -209,19 +213,21 @@ Geometric tokens use the Geometric-to-Binary framework:
 
 ## Blockers and Next Steps
 
-### Critical blockers
-1. **Geometric-to-Binary classes not bundled** — encoder.py cannot run without `GeometricEncoder`, `OctahedralState`, `SpatialGrid`, `SymmetryDetector`
-2. **No `__init__.py` files** — packages cannot be imported as modules
-3. **No `requirements.txt`** — dependencies not installable
+### Resolved blockers
+1. ~~Geometric-to-Binary classes not bundled~~ — **Resolved**: stub implementations added. Replace with real implementations for production.
+2. ~~No `__init__.py` files~~ — **Resolved**: all four packages have `__init__.py`.
+3. ~~No `requirements.txt`~~ — **Resolved**: `requirements.txt` created.
+4. ~~Cross-package relative imports broke~~ — **Resolved**: converted `from ..package` to absolute `from package` imports.
+5. ~~`prompt_evaluator.py` imported `.rubric` instead of `.rubic`~~ — **Resolved**: fixed to match actual filename.
+6. ~~`encoder.py` called `_normalize_points()` which raised NotImplementedError~~ — **Resolved**: changed to call `_encode_points_at_indices()`.
 
-### Priority next steps (from CLAUDE.md original plan)
-1. Copy Geometric-to-Binary classes into `pattern_geometry/`
-2. Add `__init__.py` to all packages
-3. Create `requirements.txt`
-4. Test vision layer against real pattern images
-5. Wire vision output → PatternPiece → encoder → scaler → output
-6. Write unit tests
-7. Create example scripts
+### Priority next steps
+1. Replace Geometric-to-Binary stub classes with real implementations from the sibling repo
+2. Test vision layer against real pattern images
+3. Wire vision output → PatternPiece → encoder → scaler → output end-to-end
+4. Write unit tests
+5. Create example scripts
+6. Add `setup.py` or `pyproject.toml` for installable packaging
 
 ---
 
