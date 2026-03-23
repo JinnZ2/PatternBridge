@@ -27,6 +27,7 @@ PatternBridge/
 ├── README.md                       # Brief project description
 ├── LICENSE                         # Apache 2.0
 ├── requirements.txt                # Python dependencies
+├── pyproject.toml                  # Package configuration (pip installable)
 ├── .gitignore                      # Git ignore rules
 │
 ├── pattern_vision/                 # Image analysis layer
@@ -49,9 +50,20 @@ PatternBridge/
 │   ├── svg_writer.py               # SVG at real-world scale (96 px/inch)
 │   └── pdf_writer.py               # Tiled PDF for home printers
 │
-└── bridge/
-    ├── __init__.py
-    └── pattern_bridge.py           # End-to-end orchestrator
+├── bridge/
+│   ├── __init__.py
+│   └── pattern_bridge.py           # End-to-end orchestrator
+│
+├── tests/                          # Unit tests (94 tests, all passing)
+│   ├── conftest.py                 # Shared fixtures (pieces, vision results)
+│   ├── test_vision.py              # Rubric, scoring, prompt evaluator
+│   ├── test_geometry.py            # PatternPiece, encoder, scaler
+│   ├── test_output.py              # SVG and PDF writers
+│   └── test_pipeline.py            # End-to-end pipeline wiring
+│
+└── examples/                       # Usage examples
+    ├── quick_start.py              # Minimal pipeline in ~20 lines
+    └── pants_pullon.py             # Multi-piece pants with encode → scale → export
 ```
 
 ### Known filename issue
@@ -81,16 +93,16 @@ PatternBridge/
 ### Not yet created
 | Planned file | Purpose |
 |---|---|
-| `setup.py` / `pyproject.toml` | Package configuration |
 | `pattern_vision/classifier.py` | CNN multi-head classifier |
 | `pattern_vision/dataset.py` | Pattern image dataset loader |
 | `pattern_vision/train.py` | Training loop |
 | `pattern_geometry/symmetry.py` | SymmetryDetector wrapper |
 | `pattern_geometry/grid.py` | SpatialGrid wrapper |
 | `pattern_output/data_export.py` | JSON/Python dict export (partially in bridge) |
-| `tests/` | Unit tests (test_vision, test_geometry, test_output) |
-| `examples/` | Usage examples (pants, sundress, socks, hat) |
 | `patterns/` | Sample pattern images |
+| `examples/sundress.py` | Sundress example |
+| `examples/socks.py` | Sock pattern example |
+| `examples/hat.py` | Hat pattern example |
 
 ---
 
@@ -173,6 +185,34 @@ Requires **Python 3.10+** (uses `X | Y` union syntax and `from __future__ import
 
 ---
 
+## Running Tests
+
+```bash
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run all tests (94 tests)
+pytest tests/ -v
+
+# Run by layer
+pytest tests/test_vision.py -v     # rubric, scoring, prompt evaluator
+pytest tests/test_geometry.py -v   # PatternPiece, encoder, scaler
+pytest tests/test_output.py -v     # SVG and PDF writers
+pytest tests/test_pipeline.py -v   # end-to-end pipeline wiring
+```
+
+## Running Examples
+
+```bash
+# From project root
+python examples/quick_start.py      # minimal pipeline demo
+python examples/pants_pullon.py     # full multi-piece pants example
+
+# Output goes to output/ directory (SVG, PDF, JSON)
+```
+
+---
+
 ## Development Conventions
 
 ### Code style
@@ -224,10 +264,9 @@ Geometric tokens use the Geometric-to-Binary framework:
 ### Priority next steps
 1. Replace Geometric-to-Binary stub classes with real implementations from the sibling repo
 2. Test vision layer against real pattern images
-3. Wire vision output → PatternPiece → encoder → scaler → output end-to-end
-4. Write unit tests
-5. Create example scripts
-6. Add `setup.py` or `pyproject.toml` for installable packaging
+3. Add sample pattern images to `patterns/` directory
+4. Create additional example scripts (sundress, socks, hat)
+5. Add CNN classifier (`pattern_vision/classifier.py`) for automated piece detection
 
 ---
 

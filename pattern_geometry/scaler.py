@@ -406,7 +406,7 @@ class PatternScaler:
         if not points:
             return points, []
 
-        points_arr = np.array(points)
+        points_arr = np.array(points, dtype=np.float64)
         movements = []
 
         # Identify boundary regions by their relative position
