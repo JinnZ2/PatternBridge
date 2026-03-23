@@ -21,7 +21,13 @@ dependencies = [
 
 [project.optional-dependencies]
 openai = ["openai>=1.0.0"]
+classifier = ["torch>=2.0.0", "torchvision>=0.15.0"]
 dev = ["pytest>=7.0.0"]
+all = [
+    "openai>=1.0.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+]
 
 [tool.setuptools.packages.find]
 include = [
@@ -29,6 +35,7 @@ include = [
     "pattern_geometry*",
     "pattern_output*",
     "bridge*",
+    "patterns*",
 ]
 
 [tool.pytest.ini_options]

@@ -82,7 +82,9 @@ class PatternEncoder:
             adaptive_threshold=ADAPTIVE_THRESHOLD,
             max_depth=MAX_DEPTH,
         )
-        self.symmetry_detector = SymmetryDetector() if detect_symmetry else None
+        self.symmetry_detector = SymmetryDetector(
+            position_tol=0.5, magnitude_tol=0.1,
+        ) if detect_symmetry else None
         self.curve_threshold = curve_threshold
 
     # ── Public API ────────────────────────────────────────────────────────────

@@ -28,7 +28,6 @@ Usage:
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Optional
 
@@ -45,6 +44,7 @@ from pattern_geometry.scaler import (
 )
 from pattern_output.svg_writer import SVGWriter
 from pattern_output.pdf_writer import PDFWriter
+from pattern_output.data_export import save_json, save_manifest
 
 
 # ── Built-in measurement profiles ────────────────────────────────────────────
@@ -124,9 +124,12 @@ class PatternBridge:
     and multi-format output.
 
     Args:
-        provider: LLM provider for vision analysis ("anthropic" or "openai").
-        api_key: API key. If None, reads from environment variable.
-        model: Model name override.
+        provider: Vision provider — "anthropic", "openai", or "classifier".
+            "classifier" uses the CNN PatternClassifier (requires torch and
+            a weights file passed via classifier_weights).
+        api_key: API key for LLM providers. If None, reads from environment.
+        model: Model name override for LLM providers.
+        classifier_weights: Path to .pt weights file when provider="classifier".
         encode: Whether to run geometric encoding. Default True.
         min_vision_score: Pieces below this score are skipped. Default 51.
         px_per_inch: SVG scale factor. Default 96 (SVG standard).
@@ -138,6 +141,7 @@ class PatternBridge:
         provider: str = "anthropic",
         api_key: Optional[str] = None,
         model: Optional[str] = None,
+        classifier_weights: Optional[str] = None,
         encode: bool = True,
         min_vision_score: float = 51.0,
         px_per_inch: float = 96.0,
@@ -149,12 +153,21 @@ class PatternBridge:
 
         # Vision layer
         self.rubric = PatternRubric()
-        self.evaluator = PatternPromptEvaluator(
-            provider=provider,
-            api_key=api_key,
-            model=model,
-            rubric=self.rubric,
-        )
+        self.classifier = None
+
+        if provider == "classifier":
+            from pattern_vision.classifier import PatternClassifier
+            self.classifier = PatternClassifier()
+            if classifier_weights:
+                self.classifier.load(classifier_weights)
+            self.evaluator = None
+        else:
+            self.evaluator = PatternPromptEvaluator(
+                provider=provider,
+                api_key=api_key,
+                model=model,
+                rubric=self.rubric,
+            )
 
         # Geometry layer
         self.encoder = PatternEncoder() if encode else None
@@ -277,11 +290,20 @@ class PatternBridge:
         Returns:
             List of PatternPiece objects from detected pieces.
         """
-        vision_results = self.evaluator.evaluate(image_path)
-        pieces = [
-            PatternPiece.from_vision_result(r, image_source=str(image_path))
-            for r in vision_results
-        ]
+        if self.classifier is not None:
+            prediction = self.classifier.predict(image_path)
+            vision_result = self.classifier.to_vision_result(prediction)
+            pieces = [
+                PatternPiece.from_vision_result(
+                    vision_result, image_source=str(image_path)
+                )
+            ]
+        else:
+            vision_results = self.evaluator.evaluate(image_path)
+            pieces = [
+                PatternPiece.from_vision_result(r, image_source=str(image_path))
+                for r in vision_results
+            ]
         return pieces
 
     def scale(
@@ -362,17 +384,20 @@ class PatternBridge:
             self.pdf_writer.save_all(renderable, pdf_path)
             output_files["pdf"].append(pdf_path)
 
-        # JSON — all pieces including metadata-only
+        # JSON — individual piece files + manifest
         if "json" in formats:
-            json_path = output_dir / f"{stem}_pieces.json"
-            data = {
-                "source_image": stem,
-                "pieces": [p.to_dict() for p in pieces],
-                "renderable_count": len(renderable),
-                "metadata_only_count": len(metadata_only),
-            }
-            json_path.write_text(json.dumps(data, indent=2))
-            output_files["json"].append(json_path)
+            for piece in pieces:
+                piece_path = output_dir / f"{stem}_{piece.name.lower()}.json"
+                save_json(piece, piece_path)
+                output_files["json"].append(piece_path)
+
+            # Manifest with summary
+            manifest_path = output_dir / f"{stem}_manifest.json"
+            save_manifest(
+                pieces, manifest_path, pattern_name=stem,
+                notes=f"source: {stem}, renderable: {len(renderable)}, metadata_only: {len(metadata_only)}",
+            )
+            output_files["json"].append(manifest_path)
 
         return output_files
 
