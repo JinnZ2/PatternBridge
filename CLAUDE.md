@@ -1,168 +1,238 @@
-Phase 1 — Foundation (the skeleton)
-New repo structure with three core modules mirroring your existing ecosystem:
-	∙	pattern_vision/ — adapted from hands-lie-detector. Prompt evaluator gets a new pattern analysis rubric. Feeds pattern images to Claude/GPT-4o and gets back structured JSON: piece name, grain line direction, notch positions, fold lines, seam allowances, key measurements.
-	∙	pattern_geometry/ — pulls in GeometricEncoder, OctahedralState, SpatialGrid, SymmetryDetector directly. These encode the extracted coordinates into your binary token format.
-	∙	pattern_output/ — SVG writer, PDF tiler, Python data structure. Starts simple.
+# PatternBridge
 
-Phase 2 — The encoding pipeline
-Connect vision output → geometric encoding. A pattern piece becomes a sequence of geometric tokens representing its boundary points. Straight edges get sparse tokens, curves get dense ones (SpatialGrid handles this automatically). SymmetryDetector flags fold lines and mirrors automatically.
+A parametric sewing pattern generation system that takes images of real patterns, extracts geometry using vision AI, encodes shapes using the Geometric-to-Binary framework, and outputs scalable patterns in SVG, PDF, and JSON.
 
-Phase 3 — Parametric scaling
-This is the real magic. Once a pattern is encoded, scaling it to new measurements becomes math on the tokens rather than manual redrawing. Your husband’s 36/36 inseam versus a size 2 are just different parameter inputs to the same token structure.
+Part of the **JinnZ2 ecosystem**. Bridges [Geometric-to-Binary-Computational-Bridge](https://github.com/JinnZ2/Geometric-to-Binary-Computational-Bridge) and [hands-lie-detector](https://github.com/JinnZ2/hands-lie-detector) into the sewing pattern domain.
 
-Phase 4 — Multi-format output
-SVG first (easiest), then PDF with tiling for home printers, then the full Python data structure for programmatic use.
+---
 
-PatternBridge
-A parametric sewing pattern generation system — takes images of real patterns, extracts geometry using vision AI, encodes shapes using the Geometric-to-Binary framework, and outputs scalable patterns in SVG, PDF, and Python data structures.
-Part of the JinnZ2 ecosystem. Bridges Geometric-to-Binary-Computational-Bridge and hands-lie-detector into a new domain.
+## Architecture
 
-Architecture
-
+```
 Pattern Image
-  → pattern_vision/      (adapted from hands-lie-detector)
-    → pattern_geometry/  (adapted from Geometric-to-Binary)
-      → pattern_output/  (SVG / PDF / Python data)
+  → pattern_vision/      Vision AI extracts piece features (rubric + LLM)
+    → pattern_geometry/  Encodes boundary → geometric tokens, scales parametrically
+      → pattern_output/  Renders SVG, tiled PDF, or JSON
+```
 
+Orchestrated by `bridge/pattern_bridge.py` — single entry point for the full pipeline.
 
-Repository Structure
+---
 
+## Repository Structure (Actual)
+
+```
 PatternBridge/
-├── CLAUDE.md
-├── README.md
-├── requirements.txt
-├── setup.py
+├── CLAUDE.md                       # This file — project guide for AI assistants
+├── README.md                       # Brief project description
+├── LICENSE                         # Apache 2.0
 │
-├── pattern_vision/              # Image analysis layer
-│   ├── __init__.py
-│   ├── rubric.py                # Pattern feature rubric (replaces hand scoring rubric)
-│   ├── prompt_evaluator.py      # LLM vision analysis (adapted from hands-lie-detector)
-│   ├── classifier.py            # CNN multi-head classifier (adapted)
-│   ├── dataset.py               # Pattern image dataset loader
-│   └── train.py                 # Training loop
+├── pattern_vision/                 # Image analysis layer
+│   ├── rubic.py                    # 7-category pattern scoring rubric (100 pts)
+│   └── prompt_evaluator.py         # Vision LLM analysis (Anthropic / OpenAI)
 │
-├── pattern_geometry/            # Geometric encoding layer
-│   ├── __init__.py
-│   ├── piece.py                 # PatternPiece: core data structure
-│   ├── encoder.py               # Wraps GeometricEncoder for pattern use
-│   ├── symmetry.py              # Wraps SymmetryDetector for fold lines
-│   ├── grid.py                  # Wraps SpatialGrid for adaptive resolution
-│   └── scaler.py                # Parametric scaling between sizes
+├── pattern_geometry/               # Geometric encoding layer
+│   ├── piece.py                    # PatternPiece dataclass — core data structure
+│   ├── encoder.py                  # Boundary → geometric token encoding
+│   └── scaler.py                   # Parametric scaling with grading rules
 │
-├── pattern_output/              # Output layer
-│   ├── __init__.py
-│   ├── svg_writer.py            # SVG pattern output
-│   ├── pdf_writer.py            # PDF with tiling for home printers
-│   └── data_export.py           # Python dict / JSON export
+├── pattern_output/                 # Output layer
+│   ├── svg_writer.py               # SVG at real-world scale (96 px/inch)
+│   └── pdf_writer.py               # Tiled PDF for home printers
 │
-├── bridge/                      # Pipeline orchestrator
-│   ├── __init__.py
-│   └── pattern_bridge.py        # End-to-end: image → output
-│
-├── tests/
-│   ├── test_vision.py
-│   ├── test_geometry.py
-│   └── test_output.py
-│
-├── examples/
-│   ├── pants_pullOn.py          # McCall's pull-on pants
-│   ├── sundress.py              # S-5474 sleeveless sundress
-│   ├── socks.py                 # Hand-drawn fleece sock pattern
-│   └── hat.py                   # McCall's M8171 hat
-│
-└── patterns/                    # Raw pattern images for testing
-    └── (your uploaded images go here)
+└── bridge/
+    └── pattern_bridge.py           # End-to-end orchestrator
+```
 
+### Known filename issue
 
-Phase 1 — Core Data Structure
-File: pattern_geometry/piece.py
-Define PatternPiece — the central object everything else feeds into and outputs from:
+`pattern_vision/rubic.py` — note the typo (should be "rubric"). Preserve existing name to avoid breaking imports unless explicitly asked to rename.
 
+---
+
+## Implementation Status
+
+### Fully implemented
+- **pattern_vision/rubic.py** (163 lines) — 7-category rubric: Piece Identification, Grain Line, Fold Line, Notch Positions, Dart Definitions, Seam Allowance, Boundary Traceability. 100-point scale with 6 interpretation bands.
+- **pattern_vision/prompt_evaluator.py** (297 lines) — `PatternPromptEvaluator` class. Supports `anthropic` (claude-sonnet-4-6) and `openai` (gpt-4o) providers. Encodes images to base64, sends with structured prompt, returns list of piece dicts.
+- **pattern_geometry/piece.py** (322 lines) — `PatternPiece` dataclass plus supporting types (`GrainLine`, `FoldLine`, `Notch`, `Dart`, `SeamAllowance`, `LengthenShortenLine`). Factory method `from_vision_result()`. Serialization via `to_dict()` / `to_json()`.
+- **pattern_geometry/scaler.py** (721 lines) — `PatternScaler` with zone-based grading. Built-in profiles: `PROFILE_ZERO_MUSCULAR` (size 0 + muscle), `PROFILE_TALL_36_36` (36/36 inseam). Grade rules for pants and bodice. Factory methods `for_zero_muscular()`, `for_tall_36_36()`.
+- **pattern_output/svg_writer.py** (752 lines) — `SVGWriter` renders boundary, seam line, grain line, fold line, notches, darts, labels. Multi-piece sheet layout. Requires `svgwrite`.
+- **pattern_output/pdf_writer.py** (848 lines) — `PDFWriter` tiles large patterns across Letter/A4 pages with registration marks, overlap zones, assembly instructions, optional cover page. Requires `reportlab`.
+- **bridge/pattern_bridge.py** (461 lines) — `PatternBridge` orchestrator with `run()`, `from_image()`, `scale()`, `export()`, `analyze()` methods. `PipelineResult` tracks pieces through all stages.
+
+### Blocked — missing dependencies
+- **pattern_geometry/encoder.py** (524 lines) — Code is complete but **cannot run**. Imports four classes from Geometric-to-Binary that are not in this repo:
+  ```python
+  from .geometric_encoder import GeometricEncoder
+  from .octahedral_state import OctahedralState
+  from .spatial_grid import SpatialGrid
+  from .symmetry_detector import SymmetryDetector
+  ```
+  These must be copied from [Geometric-to-Binary-Computational-Bridge](https://github.com/JinnZ2/Geometric-to-Binary-Computational-Bridge) into `pattern_geometry/`.
+
+### Not yet created
+| Planned file | Purpose |
+|---|---|
+| `__init__.py` (all packages) | Package initialization — required for imports |
+| `requirements.txt` | Dependency specification |
+| `setup.py` / `pyproject.toml` | Package configuration |
+| `pattern_vision/classifier.py` | CNN multi-head classifier |
+| `pattern_vision/dataset.py` | Pattern image dataset loader |
+| `pattern_vision/train.py` | Training loop |
+| `pattern_geometry/symmetry.py` | SymmetryDetector wrapper |
+| `pattern_geometry/grid.py` | SpatialGrid wrapper |
+| `pattern_output/data_export.py` | JSON/Python dict export (partially in bridge) |
+| `tests/` | Unit tests (test_vision, test_geometry, test_output) |
+| `examples/` | Usage examples (pants, sundress, socks, hat) |
+| `patterns/` | Sample pattern images |
+| `.gitignore` | Git ignore rules |
+
+---
+
+## Key Classes and Entry Points
+
+### PatternPiece (`pattern_geometry/piece.py`)
+The central data structure. Everything feeds into it and outputs from it.
+
+```python
 @dataclass
 class PatternPiece:
-    name: str                        # e.g. "FRONT", "SOLE"
-    boundary_points: list[tuple]     # ordered (x, y) coordinates
-    grain_line: tuple | None         # start/end points of grain line
-    fold_line: tuple | None          # fold line if "cut on fold"
-    notches: list[tuple]             # notch positions
-    darts: list[dict]                # dart definitions
-    seam_allowance: float            # in inches or cm
-    encoded_tokens: list[str]        # geometric tokens from encoder
-    metadata: dict                   # size, garment type, source pattern
+    name: str                           # "FRONT", "SOLE", etc.
+    boundary_points: list[Point]        # ordered (x, y) coordinates
+    grain_line: GrainLine | None
+    fold_line: FoldLine | None
+    notches: list[Notch]
+    darts: list[Dart]
+    seam_allowance: SeamAllowance
+    encoded_tokens: list[str]           # geometric tokens from encoder
+    # ... plus vision metadata, scaling fields, etc.
+```
 
+Key properties: `is_cut_on_fold`, `is_encodable` (≥3 boundary points), `needs_better_image` (score < 40).
 
-Phase 2 — Vision Layer
-File: pattern_vision/rubric.py
-Replace the hand scoring rubric with a pattern analysis rubric. Seven feature categories mirroring the hands-lie-detector structure:
+### PatternBridge (`bridge/pattern_bridge.py`)
+Primary user-facing API:
 
-File: pattern_vision/prompt_evaluator.py
-Adapted directly from hands-lie-detector/prompt/evaluator.py. New system prompt targets pattern features instead of hand wear. Returns structured JSON per piece detected in image. Supports Claude and GPT-4o.
-Immediate test: Run the prompt evaluator against your sock pattern and pants pattern images. This gives us real data before writing any other code.
-
-Phase 3 — Geometry Layer
-File: pattern_geometry/encoder.py
-Wraps GeometricEncoder from Geometric-to-Binary. Converts boundary point lists into geometric token sequences. Straight edges get sparse tokens, curves get dense tokens (SpatialGrid controls resolution automatically).
-File: pattern_geometry/symmetry.py
-Wraps SymmetryDetector. Automatically flags fold lines and mirror symmetry. “Cut on fold” pieces only need half their boundary encoded — the symmetry detector confirms and handles the mirror.
-File: pattern_geometry/scaler.py
-The parametric scaling engine. Takes a PatternPiece encoded at one size, applies grading rules to the tokens, outputs a new PatternPiece at target measurements. Key insight: scaling is math on the geometric tokens, not manual redrawing.
-Grading rules we’ll build for your specific bodies:
-	∙	Your measurements: size 0 frame + muscle definition adjustments
-	∙	Your husband: 36/36 inseam, tall torso adjustments
-
-Phase 4 — Output Layer
-SVG first (simplest), then PDF with tiling, then JSON export.
-SVG: Real-world scale. 1 inch = 96px or user-configurable. Grain lines, fold lines, notches all rendered as proper SVG elements with semantic layers.
-PDF: Tiled for home printing. A0 pattern on letter/A4 pages with registration marks and overlap zones so you can tape pages together.
-JSON/Python: Full PatternPiece data structure serialized. Importable by other tools in the ecosystem.
-
-Phase 5 — Pipeline Orchestrator
-File: bridge/pattern_bridge.py
-Single entry point for the full pipeline:
-
+```python
 bridge = PatternBridge(provider="anthropic")
-pieces = bridge.from_image("patterns/pants_front.jpg")
-bridge.scale(pieces, measurements={"waist": 24, "inseam": 28, "hip": 34})
-bridge.export(pieces, formats=["svg", "pdf", "json"], output_dir="output/")
+result = bridge.run(
+    image_path="patterns/pants_front.jpg",
+    profile="zero_muscular",        # or "tall_36_36" or custom dict
+    formats=["svg", "pdf", "json"],
+    output_dir="output/"
+)
+```
 
+Individual pipeline stages: `from_image()` → `scale()` → `export()`.
 
-Dependencies
+### PatternScaler (`pattern_geometry/scaler.py`)
+Built-in measurement profiles:
+- `"zero_muscular"` — Size 0 frame + muscle definition (bust 31, waist 24, hip 34, inseam 28)
+- `"tall_36_36"` — 36 waist, 36 inseam, tall torso (bust 40, waist 36, hip 40, inseam 36)
 
+---
+
+## Dependencies
+
+### Required (inferred from imports — no requirements.txt yet)
+
+```
 # Vision
-torch
-torchvision
-Pillow
-anthropic
-openai  # optional
+anthropic          # Claude API for pattern analysis
+openai             # Optional — GPT-4o support
+Pillow             # Image loading and base64 encoding
 
 # Geometry
-numpy
-scipy
-shapely
+numpy              # Spatial math, polygon operations
+scipy              # Curve fitting, Gaussian smoothing
+shapely            # Computational geometry (used in encoder)
 
 # Output
-svgwrite
-reportlab  # PDF
-ezdxf      # DXF export (future)
+svgwrite           # SVG generation
+reportlab          # PDF generation
 
+# Future
+torch, torchvision # For classifier.py (not yet implemented)
+ezdxf              # DXF export (future)
+```
 
-First Steps — In Order
-	1.	Create repo PatternBridge on GitHub
-	2.	Copy GeometricEncoder, OctahedralState, SpatialGrid, SymmetryDetector from Geometric-to-Binary into pattern_geometry/
-	3.	Copy classifier.py, dataset.py, train.py, prompt/evaluator.py from hands-lie-detector into pattern_vision/
-	4.	Write pattern_vision/rubric.py — the new pattern analysis rubric
-	5.	Adapt prompt_evaluator.py to use pattern rubric
-	6.	Test against sock and pants pattern images — validate the vision layer works
-	7.	Write pattern_geometry/piece.py — the PatternPiece dataclass
-	8.	Wire vision output → PatternPiece
-	9.	Write scaler with your measurements hardcoded as first test case
-	10.	Write SVG output
-	11.	Write PDF output
-	12.	Write orchestrator
+### External repo dependency
+Four classes from **Geometric-to-Binary-Computational-Bridge** must be copied into `pattern_geometry/`:
+- `GeometricEncoder`
+- `OctahedralState`
+- `SpatialGrid`
+- `SymmetryDetector`
 
-Ecosystem Link
-Add to .fieldlink.json in both source repos:
+### Python version
+Requires **Python 3.10+** (uses `X | Y` union syntax and `from __future__ import annotations`).
 
+---
+
+## Development Conventions
+
+### Code style
+- Dataclasses for data structures (not plain dicts)
+- Type hints throughout (using `tuple[float, float]` style, not `Tuple`)
+- Import guards for optional dependencies (`try: import svgwrite except ImportError: ...`)
+- Constants defined at module level in UPPER_SNAKE_CASE
+- Factory methods as `@classmethod` on dataclasses (e.g., `PatternPiece.from_vision_result()`)
+
+### Units
+- Default unit is **inches** throughout the codebase
+- SVG: 96 pixels per inch (configurable via `px_per_inch`)
+- PDF: 72 points per inch (reportlab default)
+- Metric conversion constants in svg_writer.py: `MM_PER_INCH = 25.4`, `CM_PER_INCH = 2.54`
+
+### Coordinate system
+- Pattern pieces use (x, y) tuples in real-world units (inches)
+- Origin at top-left of bounding box for output
+- Grain lines stored as start/end point pairs with angle
+
+### Token encoding format
+Geometric tokens use the Geometric-to-Binary framework:
+- Operators: `|` (radial/straight), `/` (tangential/curved)
+- Symbols: `O` (octahedral point), `I` (notch), `X` (dart apex), `Δ` (grain/fold marker)
+- Straight edges get sparse tokens; curves get dense tokens (curvature-adaptive)
+
+---
+
+## Pipeline Stages
+
+1. **Vision** — `PatternPromptEvaluator.evaluate(image_path)` → list of piece dicts with features scored against the 7-category rubric
+2. **Structuring** — `PatternPiece.from_vision_result(piece_dict)` → typed dataclass
+3. **Encoding** — `PatternEncoder.encode(piece)` → fills `encoded_tokens` (BLOCKED: needs Geometric-to-Binary classes)
+4. **Scaling** — `PatternScaler.scale(piece)` → new `PatternPiece` at target measurements
+5. **Output** — `SVGWriter.save()` / `PDFWriter.save()` / `piece.to_json()`
+
+---
+
+## Blockers and Next Steps
+
+### Critical blockers
+1. **Geometric-to-Binary classes not bundled** — encoder.py cannot run without `GeometricEncoder`, `OctahedralState`, `SpatialGrid`, `SymmetryDetector`
+2. **No `__init__.py` files** — packages cannot be imported as modules
+3. **No `requirements.txt`** — dependencies not installable
+
+### Priority next steps (from CLAUDE.md original plan)
+1. Copy Geometric-to-Binary classes into `pattern_geometry/`
+2. Add `__init__.py` to all packages
+3. Create `requirements.txt`
+4. Test vision layer against real pattern images
+5. Wire vision output → PatternPiece → encoder → scaler → output
+6. Write unit tests
+7. Create example scripts
+
+---
+
+## Ecosystem Links
+
+PatternBridge draws from two sibling repos:
+- **Geometric-to-Binary-Computational-Bridge** — geometric encoding framework (encoder, octahedral states, spatial grid, symmetry detection)
+- **hands-lie-detector** — vision AI inference architecture (prompt evaluation, rubric scoring, image analysis pipeline)
+
+Linked via `.fieldlink.json`:
+```json
 {
   "PatternBridge": {
     "role": "Sewing pattern digitization and parametric generation",
@@ -171,29 +241,17 @@ Add to .fieldlink.json in both source repos:
     "integrity": "SHA256"
   }
 }
+```
 
+---
 
+## Design Notes
 
-notes:
+### Parametric scaling approach
+Scaling works on geometric tokens rather than manual redrawing. A pattern encoded at one size can be graded to any target measurements by applying grade rules (x/y displacement rates) to landmark points, with zone-based Gaussian smoothing to blend regions naturally. The scaler handles dart adjustment, notch repositioning, and lengthen/shorten line movement automatically.
 
-concrete pipeline architecture for pattern image-to-parametric conversion
-Since the goal is clear — take a photograph or scan of a sewing pattern, extract geometry, and generate scalable parametric pattern pieces in Python — here is the five-stage pipeline and exactly what types of repository components would slot into each stage.
-Stage 1: Image acquisition and preprocessing. Raw images need denoising, perspective correction, and binarization. Look in the hands-lie-detector repo for any OpenCV-based capture loops (cv2.VideoCapture), frame preprocessing functions (grayscale conversion, Gaussian blur, thresholding), or camera calibration routines. These would adapt directly to capturing or loading pattern images. In the Geometric-to-Binary repo, look for any binary thresholding or image-to-binary-matrix conversion — the repo name itself suggests this kind of transform, which is exactly what you need to convert a pattern scan into a clean binary mask.
-Stage 2: Contour and landmark extraction. Once you have a clean binary image, you need to extract the outlines of pattern pieces. Functions that detect contours (cv2.findContours), fit curves, or identify landmarks/keypoints would be critical. The hands-lie-detector repo likely uses MediaPipe or a similar hand-landmark model to locate spatial keypoints on hands — the inference pipeline (model loading, landmark prediction, coordinate extraction) is architecturally identical to what you’d need for detecting pattern notches, grainlines, and corner points. Look for classes or functions that take an image and return a list of (x, y) coordinates. In the Geometric-to-Binary repo, look for any polygon representation, vertex extraction, or shape decomposition logic.
-Stage 3: Spatial math and coordinate transformation. Raw pixel coordinates must be converted to real-world measurements (centimeters/inches) using a known scale reference. The Geometric-to-Binary repo is the most likely candidate here. Look for:
-	∙	Coordinate system transforms — functions that convert between coordinate spaces (pixel → world, Cartesian → polar, or geometric → binary encodings)
-	∙	Vector math utilities — distance calculations, angle computations, normal vectors, line intersections
-	∙	Matrix operations — affine transforms, rotation matrices, scaling functions
-	∙	Binary encoding of geometry — any function that serializes shapes into binary or numeric representations, which could be adapted for parametric storage formats
-The hands-lie-detector repo may also contain Euclidean distance calculations between landmarks (commonly used to measure finger spread or hand size), which directly parallels measuring distances between pattern points.
-Stage 4: Parametric pattern generation. Cleaned coordinates and measurements feed into a generator that produces scalable pattern pieces. Look in either repo for:
-	∙	SVG or vector output functions — any code that draws shapes programmatically
-	∙	Parametric curve fitting — Bézier curves, splines, or arc fitting to smooth jagged contour data into clean pattern lines
-	∙	Shape construction from coordinates — functions that take a list of points and produce a closed polygon or path
-Stage 5: Rendering and export. The final patterns need to be rendered at correct scale for printing or digital use. Look for any matplotlib, PIL/Pillow, cairo, or reportlab rendering code in either repo, as well as any DXF, SVG, or PDF export utilities.
-How to map each repo’s code to this pipeline once accessed
-When you open the repositories, use this systematic checklist to identify relevant components:
-For Geometric-to-Binary-Computational-Bridge, prioritize finding: (1) the core conversion function that transforms geometric input to binary output — this is the repo’s namesake algorithm; (2) any geometric primitive classes (Point, Line, Polygon, Shape); (3) coordinate transformation or mapping functions; (4) any encoding/serialization logic that represents shapes numerically; and (5) math utility functions (distance, angle, intersection, area calculations). Each of these maps to Stage 3 of the pipeline, with potential contributions to Stages 4 and 5.
-For hands-lie-detector, prioritize finding: (1) the image capture and preprocessing pipeline — direct reuse for Stage 1; (2) the landmark/keypoint detection inference pipeline (model loading, prediction, post-processing) — adaptable for Stage 2 by retraining or replacing the model; (3) spatial measurement functions that compute distances or angles between detected points — reusable for Stage 3; (4) any visualization or rendering code that draws detected landmarks on images — adaptable for Stage 5 debugging and overlay views; and (5) the overall inference architecture (input → preprocess → model → postprocess → output) which gives you a proven template for the full pipeline.
-Established libraries that fill the same roles regardless of repo contents
-Even before confirming what these repos contain, certain well-proven Python libraries will form the backbone of this pipeline. OpenCV handles image loading, binarization, contour detection, and perspective correction. MediaPipe or YOLO-based keypoint models handle landmark detection from images. NumPy and SciPy provide all necessary spatial math — distances, transformations, curve fitting (scipy.interpolate, scipy.spatial). Shapely handles computational geometry operations (polygon creation, boolean operations, buffering for seam allowances). svgwrite or ezdxf export parametric patterns to industry-standard formats. The two repos you’ve identified may provide useful glue code, custom implementations, or architectural patterns that simplify integrating these libraries — but the libraries themselves are indispensable.
+### PDF tiling strategy
+Large patterns are tiled across standard paper sizes (Letter/A4) with configurable overlap zones (default 0.5 inches). Each tile page includes registration marks (crosshairs in corners), row/column labels, and assembly hints. An optional cover page lists all pieces with dimensions and assembly order.
+
+### Vision scoring
+The rubric evaluates pattern images on a 100-point scale across 7 categories. Pieces scoring below 40 are flagged via `needs_better_image`. The minimum vision score for pipeline inclusion is configurable in `PatternBridge` (default: 30).
