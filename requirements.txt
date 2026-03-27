@@ -14,6 +14,9 @@ shapely>=2.0.0
 svgwrite>=1.4.0
 reportlab>=4.0.0
 
+# Capture server (phone-based data collection)
+flask>=3.0.0
+
 # Optional: GPT-4o support
 # openai>=1.0.0
 
