@@ -36,7 +36,8 @@ PatternBridge/
 │   ├── prompt_evaluator.py         # Vision LLM analysis (Anthropic / OpenAI)
 │   ├── classifier.py               # CNN multi-head classifier (ResNet-18 backbone)
 │   ├── dataset.py                  # PyTorch Dataset for labeled pattern images
-│   └── train.py                    # Training loop with multi-task loss + CLI
+│   ├── train.py                    # Training loop with multi-task loss + CLI
+│   └── preprocessor.py             # Image quality assessment + enhancement (log/CLAHE/log-polar)
 │
 ├── pattern_geometry/               # Geometric encoding layer
 │   ├── __init__.py
@@ -62,7 +63,7 @@ PatternBridge/
 ├── patterns/
 │   └── __init__.py                 # Synthetic sample data (8 garment pieces)
 │
-├── tests/                          # Unit tests (187 tests, all passing)
+├── tests/                          # Unit tests (217 tests, all passing)
 │   ├── __init__.py
 │   ├── conftest.py                 # Shared fixtures (pieces, vision results)
 │   ├── test_vision.py              # Rubric, scoring, prompt evaluator
@@ -72,7 +73,8 @@ PatternBridge/
 │   ├── test_pipeline.py            # End-to-end pipeline wiring
 │   ├── test_samples.py             # Sample data, classifier/dataset/train imports
 │   ├── test_data_export.py         # JSON/data export tests
-│   └── test_capture_server.py      # Mobile capture server tests
+│   ├── test_capture_server.py      # Mobile capture server tests
+│   └── test_preprocessor.py        # Image preprocessor tests
 │
 ├── tools/
 │   ├── __init__.py
@@ -115,6 +117,7 @@ PatternBridge/
 - **patterns/__init__.py** — Synthetic sample pattern data (8 samples: pants front/back, bodice front/back, skirt front, sock sole, hat crown, sundress front/back) with vision results and measurements.
 - **pattern_vision/dataset.py** (230 lines) — `PatternDataset` PyTorch Dataset. Scans garment_type/piece_name directory tree, supports augmentation (RandomResizedCrop, flip, rotation, color jitter), optional per-image JSON annotations for fold/grain/notch/dart labels.
 - **pattern_vision/train.py** (299 lines) — `train()` function + `MultiTaskLoss` class. Weighted multi-task loss (CE for classification, BCE for binary, MSE for regression). AdamW + CosineAnnealingLR. Train/val split, best-model checkpointing, CLI entry point via `python -m pattern_vision.train`.
+- **pattern_vision/preprocessor.py** — Image quality assessment + enhancement for bad photos. Log transform + CLAHE for underexposed/low-contrast images, log-polar transform for rotation-invariant features, unsharp mask for blur. Auto-detects issues via `assess_quality()` and applies corrections via `preprocess()`.
 - **tools/capture_server.py** — Flask web server for phone-based pattern image capture. Mobile-friendly UI with garment type/piece name selection, per-image annotation (fold/grain/notch/dart), and live capture history. Saves directly into PatternDataset directory structure.
 - **examples/sundress.py** — Full pipeline: sample data → boundary → encode → scale → SVG + PDF + JSON.
 - **examples/socks.py** — Single-piece pipeline with symmetry detection.
