@@ -33,7 +33,10 @@ PatternBridge/
 ├── pattern_vision/                 # Image analysis layer
 │   ├── __init__.py
 │   ├── rubic.py                    # 7-category pattern scoring rubric (100 pts)
-│   └── prompt_evaluator.py         # Vision LLM analysis (Anthropic / OpenAI)
+│   ├── prompt_evaluator.py         # Vision LLM analysis (Anthropic / OpenAI)
+│   ├── classifier.py               # CNN multi-head classifier (ResNet-18 backbone)
+│   ├── dataset.py                  # PyTorch Dataset for labeled pattern images
+│   └── train.py                    # Training loop with multi-task loss + CLI
 │
 ├── pattern_geometry/               # Geometric encoding layer
 │   ├── __init__.py
@@ -41,31 +44,43 @@ PatternBridge/
 │   ├── boundary.py                 # Template-based boundary generation (vision→geometry bridge)
 │   ├── encoder.py                  # Boundary → geometric token encoding
 │   ├── scaler.py                   # Parametric scaling with grading rules
-│   ├── geometric_encoder.py        # Stub — GeometricEncoder (replace with real impl)
-│   ├── octahedral_state.py         # Stub — OctahedralState (replace with real impl)
-│   ├── spatial_grid.py             # SpatialGrid — curvature-adaptive point refinement
-│   └── symmetry_detector.py        # Stub — SymmetryDetector (replace with real impl)
+│   ├── geometric_encoder.py        # Bidirectional token↔binary encoding
+│   ├── octahedral_state.py         # 8-vertex cubic coordinate states
+│   ├── spatial_grid.py             # Octree-based adaptive spatial decomposition
+│   └── symmetry_detector.py        # Reflective and rotational symmetry detection
 │
 ├── pattern_output/                 # Output layer
 │   ├── __init__.py
 │   ├── svg_writer.py               # SVG at real-world scale (96 px/inch)
-│   └── pdf_writer.py               # Tiled PDF for home printers
+│   ├── pdf_writer.py               # Tiled PDF for home printers
+│   └── data_export.py              # JSON/dict export with manifest generation
 │
 ├── bridge/
 │   ├── __init__.py
 │   └── pattern_bridge.py           # End-to-end orchestrator
 │
-├── tests/                          # Unit tests (122 tests, all passing)
+├── patterns/
+│   └── __init__.py                 # Synthetic sample data (8 garment pieces)
+│
+├── tests/                          # Unit tests (174 tests, all passing)
+│   ├── __init__.py
 │   ├── conftest.py                 # Shared fixtures (pieces, vision results)
 │   ├── test_vision.py              # Rubric, scoring, prompt evaluator
 │   ├── test_geometry.py            # PatternPiece, encoder, scaler
 │   ├── test_boundary.py            # Boundary generation, templates, full pipeline
 │   ├── test_output.py              # SVG and PDF writers
-│   └── test_pipeline.py            # End-to-end pipeline wiring
+│   ├── test_pipeline.py            # End-to-end pipeline wiring
+│   ├── test_samples.py             # Sample data, classifier/dataset/train imports
+│   └── test_data_export.py         # JSON/data export tests
+│
+├── weights/                        # Trained classifier weights (empty until training)
 │
 └── examples/                       # Usage examples
     ├── quick_start.py              # Minimal pipeline in ~20 lines
-    └── pants_pullon.py             # Multi-piece pants with encode → scale → export
+    ├── pants_pullon.py             # Multi-piece pants with encode → scale → export
+    ├── sundress.py                 # Full pipeline: sample data → SVG + PDF + JSON
+    ├── socks.py                    # Single-piece pipeline with symmetry detection
+    └── hat.py                      # Multi-cut piece with token introspection
 ```
 
 ### Known filename issue
@@ -93,6 +108,8 @@ PatternBridge/
 - **pattern_vision/classifier.py** — CNN multi-head classifier (ResNet-18 backbone). Predicts garment type, piece name, fold/grain lines, notch/dart counts. Requires `torch`/`torchvision` (import-guarded).
 - **pattern_output/data_export.py** — JSON/dict export with computed properties, manifest generation, and full pattern set export.
 - **patterns/__init__.py** — Synthetic sample pattern data (8 samples: pants front/back, bodice front/back, skirt front, sock sole, hat crown, sundress front/back) with vision results and measurements.
+- **pattern_vision/dataset.py** (230 lines) — `PatternDataset` PyTorch Dataset. Scans garment_type/piece_name directory tree, supports augmentation (RandomResizedCrop, flip, rotation, color jitter), optional per-image JSON annotations for fold/grain/notch/dart labels.
+- **pattern_vision/train.py** (299 lines) — `train()` function + `MultiTaskLoss` class. Weighted multi-task loss (CE for classification, BCE for binary, MSE for regression). AdamW + CosineAnnealingLR. Train/val split, best-model checkpointing, CLI entry point via `python -m pattern_vision.train`.
 - **examples/sundress.py** — Full pipeline: sample data → boundary → encode → scale → SVG + PDF + JSON.
 - **examples/socks.py** — Single-piece pipeline with symmetry detection.
 - **examples/hat.py** — Multi-cut piece with token introspection.
@@ -100,9 +117,9 @@ PatternBridge/
 ### Not yet created
 | Planned file | Purpose |
 |---|---|
-| `pattern_vision/dataset.py` | Pattern image dataset loader |
-| `pattern_vision/train.py` | Training loop for classifier |
-| `weights/` | Trained classifier weights |
+| `pattern_vision/dataset.py` | ~~Pattern image dataset loader~~ — **Done** |
+| `pattern_vision/train.py` | ~~Training loop for classifier~~ — **Done** |
+| `weights/` | Trained classifier weights (directory ready, needs training data) |
 
 ---
 
@@ -259,7 +276,7 @@ Geometric tokens use the Geometric-to-Binary framework:
 1. **Vision** — `PatternPromptEvaluator.evaluate(image_path)` → list of piece dicts with features scored against the 7-category rubric
 2. **Structuring** — `PatternPiece.from_vision_result(piece_dict)` → typed dataclass (no boundary points yet)
 3. **Boundary** — `generate_boundary(piece, measurements)` → fills `boundary_points`, `grain_line`, `fold_line`, `notches` from garment-type templates
-4. **Encoding** — `PatternEncoder.encode(piece)` → fills `encoded_tokens` (runs against stubs; replace with real Geometric-to-Binary classes for production)
+4. **Encoding** — `PatternEncoder.encode(piece)` → fills `encoded_tokens` (uses real Geometric-to-Binary implementations)
 5. **Scaling** — `PatternScaler.scale(piece)` → new `PatternPiece` at target measurements
 6. **Output** — `SVGWriter.save()` / `PDFWriter.save()` / `piece.to_json()`
 
@@ -287,7 +304,7 @@ Geometric tokens use the Geometric-to-Binary framework:
 4. ~~Create additional example scripts (sundress, socks, hat)~~ — **Done**
 5. ~~Add CNN classifier (`pattern_vision/classifier.py`)~~ — **Done** (needs training data + weights)
 6. ~~Add JSON/data export module~~ — **Done** (`pattern_output/data_export.py`)
-7. Create `pattern_vision/dataset.py` and `train.py` for classifier training
+7. ~~Create `pattern_vision/dataset.py` and `train.py` for classifier training~~ — **Done** (dataset loader + multi-task training loop with CLI)
 8. Collect and curate real pattern images for training and testing
 
 ---
