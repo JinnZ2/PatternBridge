@@ -63,7 +63,7 @@ PatternBridge/
 ├── patterns/
 │   └── __init__.py                 # Synthetic sample data (8 garment pieces)
 │
-├── tests/                          # Unit tests (217 tests, all passing)
+├── tests/                          # Unit tests (250 tests, all passing)
 │   ├── __init__.py
 │   ├── conftest.py                 # Shared fixtures (pieces, vision results)
 │   ├── test_vision.py              # Rubric, scoring, prompt evaluator
@@ -74,11 +74,13 @@ PatternBridge/
 │   ├── test_samples.py             # Sample data, classifier/dataset/train imports
 │   ├── test_data_export.py         # JSON/data export tests
 │   ├── test_capture_server.py      # Mobile capture server tests
-│   └── test_preprocessor.py        # Image preprocessor tests
+│   ├── test_preprocessor.py        # Image preprocessor tests
+│   └── test_fetch_patterns.py      # Open-source pattern fetcher tests
 │
 ├── tools/
 │   ├── __init__.py
-│   └── capture_server.py           # Mobile capture server for phone-based data collection
+│   ├── capture_server.py           # Mobile capture server for phone-based data collection
+│   └── fetch_patterns.py           # Download open-source patterns from curated sources
 │
 ├── weights/                        # Trained classifier weights (empty until training)
 │
@@ -119,6 +121,7 @@ PatternBridge/
 - **pattern_vision/train.py** (299 lines) — `train()` function + `MultiTaskLoss` class. Weighted multi-task loss (CE for classification, BCE for binary, MSE for regression). AdamW + CosineAnnealingLR. Train/val split, best-model checkpointing, CLI entry point via `python -m pattern_vision.train`.
 - **pattern_vision/preprocessor.py** — Image quality assessment + enhancement for bad photos. Log transform + CLAHE for underexposed/low-contrast images, log-polar transform for rotation-invariant features, unsharp mask for blur. Auto-detects issues via `assess_quality()` and applies corrections via `preprocess()`.
 - **tools/capture_server.py** — Flask web server for phone-based pattern image capture. Mobile-friendly UI with garment type/piece name selection, per-image annotation (fold/grain/notch/dart), and live capture history. Saves directly into PatternDataset directory structure.
+- **tools/fetch_patterns.py** — Downloads open-source pattern images from curated sources (Freesewing MIT, Wikimedia CC, GitHub CC). Auto-classifies garment type/piece from URL keywords. Saves with provenance sidecar JSON (source URL, license, attribution). Supports custom URL fetching, dry-run mode, and pluggable source registry.
 - **examples/sundress.py** — Full pipeline: sample data → boundary → encode → scale → SVG + PDF + JSON.
 - **examples/socks.py** — Single-piece pipeline with symmetry detection.
 - **examples/hat.py** — Multi-cut piece with token introspection.
@@ -208,6 +211,7 @@ reportlab          # PDF generation
 
 # Tools
 flask              # Mobile capture server
+requests           # Pattern fetcher (open-source image downloads)
 
 # Optional
 openai             # GPT-4o support
