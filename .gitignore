@@ -11,3 +11,4 @@ venv/
 output/
 *.svg
 *.pdf
+data_local/
