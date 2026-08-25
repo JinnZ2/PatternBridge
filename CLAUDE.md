@@ -24,8 +24,8 @@ Orchestrated by `bridge/pattern_bridge.py` — single entry point for the full p
 ```
 PatternBridge/
 ├── CLAUDE.md                       # This file — project guide for AI assistants
-├── README.md                       # Brief project description
-├── LICENSE                         # Apache 2.0
+├── README.md                       # Project front door: quickstart, what's inside, licensing stance
+├── LICENSE                         # CC0 1.0 (note: pyproject.toml declares Apache-2.0 — unresolved)
 ├── requirements.txt                # Python dependencies
 ├── pyproject.toml                  # Package configuration (pip installable)
 ├── .gitignore                      # Git ignore rules

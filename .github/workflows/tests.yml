@@ -1,0 +1,48 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      # Installing the package is itself a test: a broken build backend or a
+      # missing package in pyproject makes every example fail on a fresh
+      # machine while still passing for anyone running from the repo root.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install -r requirements.txt
+
+      - name: Tests
+        run: pytest tests/ -q
+
+      # Run from a different directory so the examples cannot accidentally
+      # rely on the repo root being on sys.path.
+      - name: Examples
+        run: |
+          cd "$RUNNER_TEMP"
+          for example in quick_start pants_pullon sundress socks hat; do
+            echo "--- $example"
+            python "$GITHUB_WORKSPACE/examples/$example.py" > /dev/null
+          done
+
+      - name: Licence triage self-check
+        run: python tools/extract_pdf_patterns.py --list
