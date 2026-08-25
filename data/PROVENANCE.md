@@ -35,6 +35,9 @@ The copyright line printed in each source PDF:
 | OleDeMa sock pattern | `OleDeMa` — *"Only for personal using"* | **no** |
 | FleeceFun Basic Fleece Hat | *"You may not re-post the patterns or tutorials to the web or email them another person"*; pages watermarked | **no** |
 | FleeceFun child's pleated skirt | same FleeceFun terms | **no** |
+| make Bra sock pattern | `Copyright © Annele Salonen Tmi` — *"for your personal use only, any commercial use is prohibited"* | **no** — *removed*, see below |
+| Tessuti Monroe Turtleneck | `©Tessuti Fabrics 2018` — *"Our patterns are for personal use only"* | **no** |
+| Peppermint / In the Folds Playsuit | *"FOR PERSONAL USE ONLY"* | **no** |
 
 The line drawn here: a pattern is held back when its own text forbids sharing
 or restricts use to the person who downloaded it. A generic "all rights
@@ -51,7 +54,7 @@ grant, since copyright is automatic without one, but there is no stated
 restriction to honour either. Treat them as unresolved rather than free, and
 re-check before relying on them.
 
-The seven restricted patterns are **not committed**. `extract_pdf_patterns.py`
+The ten restricted patterns are **not committed**. `extract_pdf_patterns.py`
 marks them `redistributable=False` and skips them unless `--include-restricted`
 is passed. Extract them to an untracked directory instead:
 
@@ -87,10 +90,52 @@ piece.to_json()      # boundary_points, notches, darts, tokens
 If a restricted pattern needs to live in the repo, prefer committing the
 encoded geometry over the page image.
 
+## Removed from the repo
+
+`data/other/other/sock_bra_pieces_p1.png` and `sock_bra_pieces_p3.png` were
+committed before this provenance policy existed, with no sidecar recording
+where they came from. They are pages 1 and 3 of the **make Bra** sock pattern,
+which states *"This pattern is for your personal use only, any commercial use
+is prohibited."* Under the line above they should never have been published, so
+they have been deleted. `git log` still has them; restore with
+`git checkout f3a596b -- data/other/other/` if that call is wrong.
+
+## Screening a PDF before you add it
+
+`--check` reads a PDF's text and reports whether it restricts redistribution,
+so a pattern can be triaged without opening it:
+
+```bash
+python tools/extract_pdf_patterns.py --check ~/Downloads
+python tools/extract_pdf_patterns.py --check one-pattern.pdf
+```
+
+Four verdicts:
+
+| Verdict | Meaning |
+|---|---|
+| `USABLE` | nothing in the text restricts sharing |
+| `DO NOT USE` | a restriction was found; the matching sentence is quoted |
+| `CHECK BY EYE` | scanned PDF with no searchable text — terms may be in the artwork |
+| `ALREADY HAVE` | matches a registry entry by content hash, even if renamed |
+
+`CHECK BY EYE` exists because a text scan cannot read a restriction printed
+inside a scanned image. The OleDeMa sock pattern is exactly that case: its
+"Only for personal using" line is part of the artwork, so reporting "no terms"
+there would have been a false all-clear.
+
+The scan deliberately does **not** treat a bare "all rights reserved" as a
+block — free promotional patterns print it alongside permission to download,
+and blocking on it would reject most usable patterns.
+
 ## Sources with nothing to extract
 
 `socks_pattern_sewing_instructions.pdf` is the assembly sheet that accompanies
-the OleDeMa sock pattern — construction steps only, no pattern pieces. It is
-not in the registry because there is nothing to crop out of it.
+the OleDeMa sock pattern — construction steps only, no pattern pieces, so
+there is nothing to crop out of it.
+
+The Tessuti Monroe Turtleneck PDF is likewise an instruction booklet with no
+pattern pieces. It *is* in the registry, with no pieces mapped, so that
+`--check` recognises the file instead of re-deriving the same verdict.
 
 This is engineering guidance for organizing the dataset, not legal advice.

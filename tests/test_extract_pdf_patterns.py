@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 from pathlib import Path
@@ -14,6 +15,7 @@ from pattern_vision.classifier import GARMENT_TYPES, PIECE_NAMES
 from tools.extract_pdf_patterns import (
     PATTERN_PDFS,
     AMELIA_COAT,
+    BUTTERICK_RETRO_WRAP,
     LUXURY_FUR_COAT,
     ZUNES_KIDS_PANTS,
     ExtractResult,
@@ -22,8 +24,11 @@ from tools.extract_pdf_patterns import (
     TileLayout,
     assemble_sheet,
     autotrim,
+    check_paths,
+    check_pdf,
     crop_fraction,
     downscale,
+    find_registry_entry,
     extract_all,
     extract_pattern,
     main,
@@ -313,6 +318,126 @@ class TestCLI(TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             code = main(["--pdf-dir", tmp, "--data-dir", str(Path(tmp) / "out"), "--dry-run"])
             self.assertEqual(code, 0)
+
+
+def _text_pdf(path: Path, body: str, pages: int = 1) -> None:
+    """Write a PDF whose first page carries ``body`` as real, searchable text."""
+    doc = fitz.open()
+    for i in range(pages):
+        page = doc.new_page(width=612, height=792)
+        page.insert_textbox(fitz.Rect(40, 40, 572, 752), body if i == 0 else "x", fontsize=9)
+    doc.save(str(path))
+    doc.close()
+
+
+# Enough filler to clear MIN_TEXT_FOR_VERDICT so the scanned-PDF path is not
+# what a terms test ends up exercising.
+_FILLER = ("This pattern includes seam allowances and a full set of pieces. " * 6)
+
+
+class TestLicenseCheck(TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _check(self, body: str, name: str = "x.pdf"):
+        path = self.root / name
+        _text_pdf(path, body)
+        return check_pdf(path)
+
+    def test_personal_use_only_is_restricted(self):
+        res = self._check(_FILLER + " This pattern is for personal use only.")
+        self.assertEqual(res.verdict, "restricted")
+        self.assertTrue(res.evidence)
+
+    def test_no_redistribution_clause_is_restricted(self):
+        res = self._check(_FILLER + " Pattern may not be shared, sold or re-distributed.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_no_reposting_clause_is_restricted(self):
+        res = self._check(_FILLER + " You may not re-post the patterns to the web.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_not_to_be_reprinted_is_restricted(self):
+        res = self._check(_FILLER + " Not to be reprinted. All rights reserved.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_bare_all_rights_reserved_is_not_restricted(self):
+        # Free promotional patterns carry this alongside permission to
+        # download; treating it as a block would reject most usable patterns.
+        res = self._check(_FILLER + " (c)2008 The Pattern Company, All rights reserved.")
+        self.assertEqual(res.verdict, "no terms found")
+
+    def test_commercial_use_ban_alone_is_not_restricted(self):
+        res = self._check(_FILLER + " Commercial or industrial use prohibited.")
+        self.assertEqual(res.verdict, "no terms found")
+
+    def test_clause_split_across_lines_is_still_caught(self):
+        res = self._check(_FILLER + " Pattern may not be\nshared or re-distributed\nwithout consent.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_pdf_without_text_layer_is_not_given_an_all_clear(self):
+        path = self.root / "scan.pdf"
+        _make_pdf(path, pages=2)  # drawings only, no text
+        res = check_pdf(path)
+        self.assertEqual(res.verdict, "no text layer")
+        self.assertNotEqual(res.verdict, "no terms found")
+
+    def test_evidence_quotes_the_matching_phrase(self):
+        res = self._check(_FILLER + " This pattern is for personal use only.")
+        self.assertIn("personal use only", res.evidence[0])
+
+    def test_registry_match_by_content_hash(self):
+        path = self.root / "renamed-by-the-user.pdf"
+        _text_pdf(path, "whatever")
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        entry = PatternPDF(
+            key="probe", filename="not-this-name.pdf", sha256=digest,
+            title="t", source_name="s", license="l", attribution="a",
+            redistributable=True,
+        )
+        PATTERN_PDFS.append(entry)
+        try:
+            self.assertIs(find_registry_entry(path), entry)
+        finally:
+            PATTERN_PDFS.remove(entry)
+
+    def test_registry_match_by_filename_when_hash_is_unknown(self):
+        path = self.root / BUTTERICK_RETRO_WRAP.filename
+        _text_pdf(path, "different bytes entirely")
+        self.assertIs(find_registry_entry(path), BUTTERICK_RETRO_WRAP)
+
+    def test_unrelated_file_matches_nothing(self):
+        path = self.root / "brand-new-pattern.pdf"
+        _text_pdf(path, "hello")
+        self.assertIsNone(find_registry_entry(path))
+
+    def test_check_paths_walks_a_directory(self):
+        _text_pdf(self.root / "a.pdf", _FILLER)
+        _text_pdf(self.root / "b.pdf", _FILLER + " for personal use only")
+        results = check_paths([self.root])
+        self.assertEqual(len(results), 2)
+        self.assertEqual(
+            {r.path.name: r.verdict for r in results},
+            {"a.pdf": "no terms found", "b.pdf": "restricted"},
+        )
+
+    def test_check_paths_ignores_non_pdfs(self):
+        (self.root / "notes.txt").write_text("for personal use only")
+        self.assertEqual(check_paths([self.root]), [])
+
+    def test_registry_hashes_are_well_formed(self):
+        for pattern in PATTERN_PDFS:
+            if pattern.sha256:
+                self.assertEqual(len(pattern.sha256), 64, pattern.key)
+                int(pattern.sha256, 16)  # raises if not hex
+
+    def test_registry_hashes_are_unique(self):
+        hashes = [p.sha256 for p in PATTERN_PDFS if p.sha256]
+        self.assertEqual(len(hashes), len(set(hashes)))
 
 
 class TestExtractResult(TestCase):

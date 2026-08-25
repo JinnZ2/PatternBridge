@@ -31,6 +31,7 @@ and they should be written somewhere untracked (see ``--data-dir``) so they are
 never committed. See ``data/PROVENANCE.md``.
 
 Usage:
+    python tools/extract_pdf_patterns.py --check ~/Downloads   # vet before extracting
     python tools/extract_pdf_patterns.py --list
     python tools/extract_pdf_patterns.py --pdf-dir ~/patterns            # all open entries
     python tools/extract_pdf_patterns.py --pdf-dir ~/patterns --dry-run
@@ -44,7 +45,9 @@ Requires: pymupdf, Pillow
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -80,6 +83,11 @@ INK_THRESHOLD = 200
 # reads, since the classifier resizes to 224 px. Capping here keeps the
 # committed dataset small without touching legibility. 0 disables the cap.
 MAX_DIMENSION = 2400
+
+# Below this many characters of extractable text, a PDF is treated as scanned:
+# --check cannot read terms printed inside artwork, so it says so instead of
+# reporting a clean bill of health.
+MIN_TEXT_FOR_VERDICT = 200
 
 
 # ── Spec types ──────────────────────────────────────────────────────────────
@@ -132,7 +140,14 @@ class TileLayout:
 
 @dataclass
 class PatternPDF:
-    """A source PDF plus the pieces to pull out of it."""
+    """
+    A source PDF plus the pieces to pull out of it.
+
+    An entry with no ``pieces`` is one that has been assessed but has nothing
+    mapped — either because the PDF holds no pattern pieces at all, or because
+    it is restricted and mapping its tiles was not worth the effort. Recording
+    it still means ``--check`` recognises the file instead of re-deriving it.
+    """
 
     key: str
     filename: str
@@ -142,8 +157,20 @@ class PatternPDF:
     attribution: str
     redistributable: bool
     notice: str = ""
+    sha256: str = ""
     tiles: TileLayout | None = None
     pieces: list[PieceSpec] = field(default_factory=list)
+
+
+@dataclass
+class LicenseCheck:
+    """What ``--check`` found in one PDF."""
+
+    path: Path
+    verdict: str          # restricted | no terms found | no text layer | unreadable
+    evidence: list[str] = field(default_factory=list)
+    known_key: str = ""   # registry entry this file matches, if any
+    pages: int = 0
 
 
 @dataclass
@@ -165,6 +192,7 @@ class ExtractResult:
 BUTTERICK_RETRO_WRAP = PatternPDF(
     key="butterick_retro_wrap",
     filename="butterickfreepatternretrowrap.pdf",
+    sha256="7bed35396c43d29226ce08f1a099df90ce247e0468b7b77d5354a7537a0981b9",
     title="Butterick Retro Wrap (free project)",
     source_name="butterick",
     license="(c)2008 Butterick, The McCall Pattern Company - free download",
@@ -205,6 +233,7 @@ BUTTERICK_RETRO_WRAP = PatternPDF(
 MCCALLS_COSMETIC_BAG = PatternPDF(
     key="mccalls_cosmetic_bag",
     filename="mccallspatterncosmeticbag.pdf",
+    sha256="c4ef4cc729b484d92192f0702d3ac8b1fbaaad88900ebf52790d2c1e2f2836e3",
     title="McCall's Cosmetic Bag (free project)",
     source_name="mccalls",
     license="(c)2007 The McCall Pattern Company, All rights reserved - free download",
@@ -252,6 +281,7 @@ MCCALLS_COSMETIC_BAG = PatternPDF(
 KWIKSEW_CLUTCH_PURSE = PatternPDF(
     key="kwiksew_clutch_purse",
     filename="clutch_purse.pdf",
+    sha256="52bd864311567ea57ff0864bd753cd3ab65005f873a62f41707f53cbbd319dce",
     title="Kwik Sew 5001 Clutch Purse, sample pattern",
     source_name="kwiksew",
     license="(c)MMV (2005) Kwik Sew Pattern Co., Inc. - sample pattern, "
@@ -292,6 +322,7 @@ KWIKSEW_CLUTCH_PURSE = PatternPDF(
 FLEECE_SOCKS = PatternPDF(
     key="fleece_socks",
     filename="Fleece_Socks_Tutorial.pdf",
+    sha256="ad2905d86545c63f2ee8411bc9676201c53a55f0e69af279a9bbf2c9c4b6e350",
     title="Fleece Socks Tutorial, women's 6-11",
     source_name="fleece_socks_tutorial",
     license="no copyright notice in PDF; rightsholder unidentified",
@@ -313,6 +344,7 @@ FLEECE_SOCKS = PatternPDF(
 MOOD_LOTUS_LEGGING = PatternPDF(
     key="mood_lotus_legging",
     filename="MoodFabrics_MDF039_Lotus.pdf",
+    sha256="c39717e7645be2b5b498eac67a4fb753689ac401c0ee9913de23114b58643dbe",
     title="Mood Fabrics MDF039 'The Lotus Legging', sizes 0-22",
     source_name="moodfabrics",
     license="no copyright notice or terms in PDF; free pattern from "
@@ -345,6 +377,7 @@ MOOD_LOTUS_LEGGING = PatternPDF(
 ZUNES_KIDS_PANTS = PatternPDF(
     key="zunes_kids_pants",
     filename="KidsPantsPattern.pdf",
+    sha256="5282e62cb945d16bc7321597ac4e7e2dafcd0b7fa3fe9572e9bef84adb689d01",
     title="Zune's Sewing Therapy Kids Pants, sizes 6M-5T",
     source_name="zunes_sewing_therapy",
     license="no copyright notice or terms in PDF",
@@ -373,6 +406,7 @@ _AMELIA_CONTENT_BOX = (19.7 / 612, 17.62 / 792, (19.7 + 576) / 612, (17.62 + 756
 AMELIA_COAT = PatternPDF(
     key="amelia_coat",
     filename="Amelia_Coat.pdf",
+    sha256="2fcf1ea7bc557848fb739f7bd938dd71138763194fb2245cebdfdc67f8039ee8",
     title="Amelia Coat by Katrin Vorbeck (Stitch Winter 2012)",
     source_name="interweave",
     license="(c) Interweave Press LLC - All rights reserved, not to be reprinted",
@@ -426,6 +460,7 @@ AMELIA_COAT = PatternPDF(
 LUXURY_FUR_COAT = PatternPDF(
     key="luxury_fur_coat",
     filename="LuxuryFurCoatPattern.pdf",
+    sha256="c1057863b3bb3582944271d64144fac7d4e56742bff673f765baf9a6dc86515b",
     title="Luxury Fur Coat Pattern, sizes 2T-8",
     source_name="stefanie_knaus",
     license="Copyright 2015 Stefanie Knaus - for personal use only",
@@ -451,6 +486,7 @@ LUXURY_FUR_COAT = PatternPDF(
 SOZO_UNDIES = PatternPDF(
     key="sozo_undies",
     filename="SoZoUndies_Pattern_A4_Version.pdf",
+    sha256="de578f367776b28fd28e035e2c0dfc4a4194406f0e266795f59ab6ddbe4f4285",
     title="SoZo Undies, hip 32-50 inch",
     source_name="sozo",
     license="(c) Zoe Edwards 2021 - private home use only, may not be shared "
@@ -481,6 +517,7 @@ SOZO_UNDIES = PatternPDF(
 TILLY_SLIPPER_BOOTS = PatternPDF(
     key="tilly_slipper_boots",
     filename="SLIPPER_BOOTS_PDF.pdf",
+    sha256="d1e3c50af46c877a4142fe34e140bf8654e76e11cacdbb80c2fb51bd77170983",
     title="Tilly and the Buttons Slipper Boots, sizes S/M/L",
     source_name="tilly_and_the_buttons",
     license="(c) Tilly and the Buttons - for personal use only; PDF denies "
@@ -509,6 +546,7 @@ TILLY_SLIPPER_BOOTS = PatternPDF(
 OLEDEMA_SOCKS = PatternPDF(
     key="oledema_socks",
     filename="pattern.pdf",
+    sha256="fade39d72931f38b5dbb027dff0a58905b8267db12efc1f09f4a554e2704bcbd",
     title="OleDeMa sock pattern",
     source_name="oledema",
     license="OleDeMa - 'Only for personal using'",
@@ -543,6 +581,7 @@ _FLEECEFUN_NOTICE = (
 FLEECEFUN_FLEECE_HAT = PatternPDF(
     key="fleecefun_fleece_hat",
     filename="Fleece_Fu_Basic_Fleece_Hat.pdf",
+    sha256="fc2fb8c2da7820c354c7c80c6d3258b7c40f86941fb6562affe04c01e082311b",
     title="FleeceFun Basic Fleece Hat, 0-3 months to adult XL",
     source_name="fleecefun",
     license="FleeceFun.com - free pattern, may not be re-posted or emailed on",
@@ -563,6 +602,7 @@ FLEECEFUN_FLEECE_HAT = PatternPDF(
 FLEECEFUN_PLEATED_SKIRT = PatternPDF(
     key="fleecefun_pleated_skirt",
     filename="child_pleated_skirt.pdf",
+    sha256="09497300c6db5bce25f7c522847e2c0d4f457ba7b8b8d68be4bbf420f123d985",
     title="FleeceFun child's pleated skirt, size 7/8",
     source_name="fleecefun",
     license="FleeceFun.com - free pattern, may not be re-posted or emailed on",
@@ -587,6 +627,61 @@ FLEECEFUN_PLEATED_SKIRT = PatternPDF(
     ],
 )
 
+# Three pages: instructions, terms, and one page of pattern pieces.
+MAKEBRA_SOCK = PatternPDF(
+    key="makebra_sock",
+    filename="Sock_PatternMake_Bra1.pdf",
+    sha256="e0b59d05fe952a5e290cc618ac4793319d51901b528cbd1bee94a71f5850d710",
+    title="make Bra sock pattern, size 39-41 (UK 7-8)",
+    source_name="makebra",
+    license="Copyright (c) Annele Salonen Tmi - personal use only",
+    attribution="Annele Salonen Tmi (make Bra)",
+    redistributable=False,
+    notice=(
+        "PDF states: 'This pattern is for your personal use only, any "
+        "commercial use is prohibited.' Do not commit these images to a "
+        "public repository."
+    ),
+    pieces=[
+        PieceSpec("makebra_sock_pieces", "sock", "other", page=3, notch_count=2),
+    ],
+)
+
+# Instructions only — step photos and text, no pattern pieces. Recorded so
+# --check recognises it rather than re-deriving the same verdict.
+TESSUTI_MONROE_TURTLENECK = PatternPDF(
+    key="tessuti_monroe_turtleneck",
+    filename="Monroe_Turtleneck.pdf",
+    sha256="4dc18bb83078c1aef4d288d8bd2fb201a429b7423e396d6155c3286699948011",
+    title="Tessuti Monroe Turtleneck - sewing instructions only",
+    source_name="tessuti",
+    license="(c)Tessuti Fabrics 2018 - personal use only",
+    attribution="Tessuti Fabrics",
+    redistributable=False,
+    notice=(
+        "PDF states: 'Our patterns are for personal use only.' This file is "
+        "the instruction booklet and holds no pattern pieces, so nothing is "
+        "mapped."
+    ),
+)
+
+# 33 tiles labelled <column><row> (1A-9G). Restricted, so the grid is left
+# unmapped; the entry exists to record the verdict.
+PEPPERMINT_PLAYSUIT = PatternPDF(
+    key="peppermint_playsuit",
+    filename="PLAYSUITA4.pdf",
+    sha256="6465e65ea4f176f901eaf71b7b2defa1ebda0cf54e8e2bd903ac937aabadf560",
+    title="Peppermint / In the Folds Playsuit",
+    source_name="peppermint",
+    license="Peppermint Magazine x In the Folds - for personal use only",
+    attribution="In the Folds / Peppermint Magazine",
+    redistributable=False,
+    notice=(
+        "PDF states 'FOR PERSONAL USE ONLY'. Tile grid not mapped — the "
+        "pattern is restricted, so its pieces are not extracted here."
+    ),
+)
+
 PATTERN_PDFS: list[PatternPDF] = [
     BUTTERICK_RETRO_WRAP,
     MCCALLS_COSMETIC_BAG,
@@ -601,7 +696,168 @@ PATTERN_PDFS: list[PatternPDF] = [
     OLEDEMA_SOCKS,
     FLEECEFUN_FLEECE_HAT,
     FLEECEFUN_PLEATED_SKIRT,
+    MAKEBRA_SOCK,
+    TESSUTI_MONROE_TURTLENECK,
+    PEPPERMINT_PLAYSUIT,
 ]
+
+
+# ── Licence triage ──────────────────────────────────────────────────────────
+
+# Phrases that mean the rightsholder has restricted what you may do with the
+# file itself. Ordered most to least specific; the reason is what gets shown.
+#
+# Deliberately narrow: a bare "all rights reserved" is NOT here, because on
+# free promotional patterns it appears alongside permission to download and
+# share, and treating it as a block would reject most usable patterns. What
+# these look for is a restriction on *distribution* or a limit to *personal
+# use*, which is the line data/PROVENANCE.md draws.
+RESTRICTION_SIGNALS: list[tuple[str, str]] = [
+    (r"not\s+to\s+be\s+reprinted", "forbids reprinting"),
+    (r"may\s+not\s+be\s+(?:shared|re-?distributed|re-?posted|copied)",
+     "forbids sharing/redistribution"),
+    (r"may\s+not\s+re-?post", "forbids reposting"),
+    (r"not\s+for\s+(?:reproduction|redistribution)", "forbids reproduction"),
+    (r"do\s+not\s+(?:share|distribute|forward)", "forbids sharing"),
+    (r"not\s+forwarding\s+or\s+distributing", "forbids forwarding"),
+    (r"for\s+(?:your\s+)?personal\s+use\s+only", "personal use only"),
+    (r"personal\s+use\s+only", "personal use only"),
+    (r"only\s+for\s+personal\s+us(?:e|ing)", "personal use only"),
+    (r"private\s+home\s+use\s+only", "private home use only"),
+    (r"for\s+individual\s+use\s+only", "individual use only"),
+]
+
+_RESTRICTION_RE = [(re.compile(p, re.I), reason) for p, reason in RESTRICTION_SIGNALS]
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def find_registry_entry(path: Path) -> PatternPDF | None:
+    """Match a file against the registry by content hash, then by filename."""
+    try:
+        digest = _sha256(path)
+    except OSError:
+        digest = ""
+    if digest:
+        for pattern in PATTERN_PDFS:
+            if pattern.sha256 and pattern.sha256 == digest:
+                return pattern
+    for pattern in PATTERN_PDFS:
+        if pattern.filename.lower() == path.name.lower():
+            return pattern
+    return None
+
+
+def check_pdf(path: str | Path) -> LicenseCheck:
+    """
+    Read a PDF's text and report whether it restricts redistribution.
+
+    A "no terms found" verdict means nothing in the document restricts use.
+    That is not the same as permission — copyright applies without a notice —
+    but it does mean there is no stated restriction to honour.
+    """
+    _require_deps()
+    path = Path(path)
+    known = find_registry_entry(path)
+
+    try:
+        doc = fitz.open(str(path))
+    except Exception:
+        return LicenseCheck(path, "unreadable", known_key=known.key if known else "")
+
+    try:
+        pages = len(doc)
+        text = "\n".join(page.get_text() for page in doc)
+    finally:
+        doc.close()
+
+    # Collapse the soft hyphens and line breaks that split phrases across lines.
+    flat = re.sub(r"[-­]?\s*\n\s*", " ", text)
+    flat = re.sub(r"\s+", " ", flat)
+
+    evidence: list[str] = []
+    seen: set[str] = set()
+    for regex, reason in _RESTRICTION_RE:
+        match = regex.search(flat)
+        if not match or reason in seen:
+            continue
+        seen.add(reason)
+        start = max(0, match.start() - 60)
+        quote = flat[start:match.end() + 80].strip()
+        evidence.append(f"{reason}: “…{quote}…”")
+
+    if evidence:
+        verdict = "restricted"
+    elif len(flat.strip()) < MIN_TEXT_FOR_VERDICT:
+        # Scanned or image-only PDF: the terms may be printed in the artwork
+        # where no text scan can reach them. Saying "no terms" here would be a
+        # false all-clear, which is the one mistake this check must not make.
+        verdict = "no text layer"
+    else:
+        verdict = "no terms found"
+
+    return LicenseCheck(
+        path=path,
+        verdict=verdict,
+        evidence=evidence,
+        known_key=known.key if known else "",
+        pages=pages,
+    )
+
+
+def check_paths(targets: list[str | Path]) -> list[LicenseCheck]:
+    """Check every PDF in the given files and/or directories."""
+    files: list[Path] = []
+    for target in targets:
+        target = Path(target)
+        if target.is_dir():
+            files.extend(sorted(target.rglob("*.pdf")))
+        elif target.suffix.lower() == ".pdf":
+            files.append(target)
+    return [check_pdf(f) for f in files]
+
+
+def print_checks(checks: list[LicenseCheck]) -> None:
+    """Print a phone-readable triage table."""
+    if not checks:
+        print("no PDFs found")
+        return
+
+    for check in checks:
+        if check.known_key:
+            registered = next(p for p in PATTERN_PDFS if p.key == check.known_key)
+            flag = "ALREADY HAVE"
+            note = f"registered as {registered.key}"
+        elif check.verdict == "restricted":
+            flag = "DO NOT USE"
+            note = check.evidence[0]
+        elif check.verdict == "no text layer":
+            flag = "CHECK BY EYE"
+            note = (f"{check.pages} scanned page(s), no searchable text — "
+                    "terms may be printed in the artwork")
+        elif check.verdict == "unreadable":
+            flag = "UNREADABLE"
+            note = "could not open this file"
+        else:
+            flag = "USABLE"
+            note = f"no restriction found in {check.pages} pages"
+        print(f"{flag:13s} {check.path.name}")
+        print(f"{'':13s} {note}")
+
+    usable = sum(1 for c in checks if c.verdict == "no terms found" and not c.known_key)
+    blocked = sum(1 for c in checks if c.verdict == "restricted" and not c.known_key)
+    manual = sum(1 for c in checks if c.verdict == "no text layer" and not c.known_key)
+    known = sum(1 for c in checks if c.known_key)
+    print(f"\nusable={usable} restricted={blocked} needs-eyeball={manual} "
+          f"already-registered={known}")
+    print("'USABLE' means nothing in the PDF restricts sharing — not that it is "
+          "public domain. See data/PROVENANCE.md.")
 
 
 # ── Rendering ───────────────────────────────────────────────────────────────
@@ -907,8 +1163,19 @@ def main(argv: list[str] | None = None) -> int:
         default=MAX_DIMENSION,
         help=f"Cap the longest side of saved images (default {MAX_DIMENSION}, 0 disables)",
     )
+    parser.add_argument(
+        "--check",
+        nargs="+",
+        metavar="PATH",
+        help="Report whether each PDF (or every PDF in a directory) restricts "
+             "redistribution, then exit. Does not extract anything.",
+    )
     parser.add_argument("--list", action="store_true", help="List registry entries and exit")
     args = parser.parse_args(argv)
+
+    if args.check:
+        print_checks(check_paths(args.check))
+        return 0
 
     if args.list:
         for pattern in PATTERN_PDFS:
