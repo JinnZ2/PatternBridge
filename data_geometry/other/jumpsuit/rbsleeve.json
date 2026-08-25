@@ -1,0 +1,105 @@
+{
+  "name": "RBSLEEVE",
+  "piece_number": null,
+  "cut_quantity": 1,
+  "full_cut_quantity": 1,
+  "garment_type": "other",
+  "pattern_brand": "garment-pattern-generator",
+  "pattern_id": "jumpsuit",
+  "size_label": "",
+  "units": "inches",
+  "boundary_points": [
+    [
+      -1.3123359580052492,
+      3.2808398950131226
+    ],
+    [
+      3.2808398950131226,
+      3.2808398950131226
+    ],
+    [
+      3.532370953630795,
+      2.4533391659375905
+    ],
+    [
+      3.718285214348206,
+      1.6768737241178187
+    ],
+    [
+      3.838582677165354,
+      0.9514435695538055
+    ],
+    [
+      3.8932633420822396,
+      0.27704870224555295
+    ],
+    [
+      3.8823272090988614,
+      -0.3463108778069409
+    ],
+    [
+      3.8057742782152224,
+      -0.9186351706036742
+    ],
+    [
+      3.6636045494313207,
+      -1.4399241761446484
+    ],
+    [
+      3.4558180227471564,
+      -1.9101778944298622
+    ],
+    [
+      3.182414698162729,
+      -2.329396325459317
+    ],
+    [
+      2.84339457567804,
+      -2.697579469233012
+    ],
+    [
+      2.438757655293088,
+      -3.014727325750947
+    ],
+    [
+      1.9685039370078738,
+      -3.2808398950131226
+    ],
+    [
+      -1.3123359580052492,
+      -3.2808398950131226
+    ]
+  ],
+  "grain_line": {
+    "start": [
+      1.2904636920384953,
+      -2.624671916010498
+    ],
+    "end": [
+      1.2904636920384953,
+      2.624671916010498
+    ],
+    "angle_degrees": 90.0
+  },
+  "fold_line": null,
+  "notches": [],
+  "darts": [],
+  "seam_allowance": null,
+  "lengthen_shorten_lines": [],
+  "symmetry_detected": false,
+  "vision_scores": {},
+  "total_vision_score": 100.0,
+  "band_label": "Imported geometry - exact boundary from template; no notch, dart, or seam allowance data",
+  "target_measurements": {},
+  "ease_allowances": {},
+  "image_source": "garment-pattern-generator/jumpsuit.json#rbsleeve",
+  "image_quality_notes": "",
+  "computed": {
+    "is_encodable": true,
+    "is_cut_on_fold": false,
+    "needs_better_image": false,
+    "has_darts": false,
+    "boundary_point_count": 15,
+    "token_count": 0
+  }
+}

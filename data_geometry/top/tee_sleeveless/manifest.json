@@ -1,0 +1,31 @@
+{
+  "pattern_name": "tee_sleeveless",
+  "piece_count": 2,
+  "total_cut_count": 2,
+  "garment_types": [
+    "top"
+  ],
+  "pieces": [
+    {
+      "name": "BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "top",
+      "is_cut_on_fold": false,
+      "boundary_points": 41,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "top",
+      "is_cut_on_fold": false,
+      "boundary_points": 31,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

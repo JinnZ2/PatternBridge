@@ -1,0 +1,91 @@
+{
+  "pattern_name": "dress",
+  "piece_count": 8,
+  "total_cut_count": 8,
+  "garment_types": [
+    "dress"
+  ],
+  "pieces": [
+    {
+      "name": "TOP_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 41,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "TOP_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 31,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "SKIRT_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 17,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "SKIRT_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 17,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LFSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LBSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RBSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RFSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

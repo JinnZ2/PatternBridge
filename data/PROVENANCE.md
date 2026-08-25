@@ -4,6 +4,9 @@ Every image under `data/` is a pattern piece extracted from a source PDF or
 downloaded from an open-licensed source. Each image has a sidecar `.json` with
 its annotation labels plus `source_name`, `license`, and `attribution`.
 
+`data_geometry/` is a separate tree holding *geometry* rather than images —
+see "`data_geometry/` — this argument, applied" below.
+
 Images are produced by:
 
 - `tools/extract_pdf_patterns.py` — crops pieces out of pattern PDFs
@@ -38,6 +41,7 @@ The copyright line printed in each source PDF:
 | make Bra sock pattern | `Copyright © Annele Salonen Tmi` — *"for your personal use only, any commercial use is prohibited"* | **no** — *removed*, see below |
 | Tessuti Monroe Turtleneck | `©Tessuti Fabrics 2018` — *"Our patterns are for personal use only"* | **no** |
 | Peppermint / In the Folds Playsuit | *"FOR PERSONAL USE ONLY"* | **no** |
+| Lantoki "Chaqueta Worker Unisex" | none printed — but paid Domestika course material | **no** — see below |
 
 The line drawn here: a pattern is held back when its own text forbids sharing
 or restricts use to the person who downloaded it. A generic "all rights
@@ -54,7 +58,15 @@ grant, since copyright is automatic without one, but there is no stated
 restriction to honour either. Treat them as unresolved rather than free, and
 re-check before relying on them.
 
-The ten restricted patterns are **not committed**. `extract_pdf_patterns.py`
+One entry is held back on **provenance rather than printed terms**. The
+Lantoki worker jacket prints no restriction at all, so `--check` reports it
+USABLE — but it is course material sold with a paid Domestika course, and
+buying a course licenses use, not republication. This is the limit of an
+automated scan: it reads what a document *says*, and says nothing about where
+the document came from. Flip `redistributable` only with a licence that
+actually grants it.
+
+The eleven restricted patterns are **not committed**. `extract_pdf_patterns.py`
 marks them `redistributable=False` and skips them unless `--include-restricted`
 is passed. Extract them to an untracked directory instead:
 
@@ -89,6 +101,19 @@ piece.to_json()      # boundary_points, notches, darts, tokens
 
 If a restricted pattern needs to live in the repo, prefer committing the
 encoded geometry over the page image.
+
+### `data_geometry/` — this argument, applied
+
+`data_geometry/` holds 124 pattern pieces imported from
+Garment-Pattern-Generator (MIT, © 2021 Maria Korosteleva) by
+`tools/import_garment_patterns.py`. Every piece is exact boundary geometry read
+from an openly-licensed template — no page image, no vision inference, and no
+licensing ambiguity.
+
+This is the tier the section above argues for, and it is the only pattern
+source in the project with no caveat attached: the licence is explicit, the
+geometry is exact, and pieces feed straight into encoding, scaling, and
+output.
 
 ## Removed from the repo
 

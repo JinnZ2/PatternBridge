@@ -63,7 +63,7 @@ PatternBridge/
 ├── patterns/
 │   └── __init__.py                 # Synthetic sample data (8 garment pieces)
 │
-├── tests/                          # Unit tests (304 tests, all passing)
+├── tests/                          # Unit tests (355 tests, all passing)
 │   ├── __init__.py
 │   ├── conftest.py                 # Shared fixtures (pieces, vision results)
 │   ├── test_vision.py              # Rubric, scoring, prompt evaluator
@@ -78,6 +78,8 @@ PatternBridge/
 │   ├── test_fetch_patterns.py      # Open-source pattern fetcher tests
 │   └── test_extract_pdf_patterns.py # Pattern PDF piece extractor tests
 │
+├── data_geometry/                  # 124 MIT-licensed pieces imported as exact geometry
+│
 ├── docs/
 │   └── PATTERN_SOURCES.md          # Where to find patterns, and their licensing
 │
@@ -85,7 +87,8 @@ PatternBridge/
 │   ├── __init__.py
 │   ├── capture_server.py           # Mobile capture server for phone-based data collection
 │   ├── fetch_patterns.py           # Download open-source patterns from curated sources
-│   └── extract_pdf_patterns.py     # Crop labeled piece images out of pattern PDFs
+│   ├── extract_pdf_patterns.py     # Crop labeled piece images out of pattern PDFs
+│   └── import_garment_patterns.py  # Import exact geometry from Garment-Pattern-Generator
 │
 ├── weights/                        # Trained classifier weights (empty until training)
 │
@@ -128,6 +131,7 @@ PatternBridge/
 - **tools/capture_server.py** — Flask web server for phone-based pattern image capture. Mobile-friendly UI with garment type/piece name selection, per-image annotation (fold/grain/notch/dart), and live capture history. Saves directly into PatternDataset directory structure.
 - **tools/fetch_patterns.py** — Downloads open-source pattern images from curated sources (Freesewing MIT, Wikimedia CC, GitHub CC). Auto-classifies garment type/piece from URL keywords. Saves with provenance sidecar JSON (source URL, license, attribution). Supports custom URL fetching, dry-run mode, and pluggable source registry.
 - **tools/extract_pdf_patterns.py** — Crops labeled pattern piece images out of sewing pattern PDFs into `data/<garment_type>/<piece_name>/`. Handles single-page pieces (fractional crop + ink auto-trim) and tiled full-size patterns (joins the page grid into one sheet, then crops pieces from it); `TileLayout.content_box` trims each page so patterns that overlap rather than butt-join still line up. Saved images are capped at 2400 px on the longest side. Ships a registry of source PDFs with license metadata and content hashes; entries whose PDF forbids redistribution are flagged `redistributable=False` and skipped unless `--include-restricted` is passed. `--check <path>` triages any PDF or folder for restriction language before extraction, reporting USABLE / DO NOT USE / CHECK BY EYE (scanned, no text layer) / ALREADY HAVE (hash match). See `data/PROVENANCE.md` for the policy and `docs/PATTERN_SOURCES.md` for sources.
+- **tools/import_garment_patterns.py** — Imports exact pattern geometry from [Garment-Pattern-Generator](https://github.com/maria-korosteleva/Garment-Pattern-Generator) templates (MIT). Each template panel is a vertex list plus an edge loop with quadratic Bézier curvature; the importer resolves control points using the generator's own relative convention, samples curves, converts cm→inches, and flips the y-axis from the generator's y-up frame to this project's y-down one. Produces `PatternPiece` objects that feed encoding/scaling/output directly — no vision layer. 23 templates → 124 pieces in `data_geometry/`. Run with `python -m tools.import_garment_patterns --src <checkout> --out data_geometry`.
 - **examples/sundress.py** — Full pipeline: sample data → boundary → encode → scale → SVG + PDF + JSON.
 - **examples/socks.py** — Single-piece pipeline with symmetry detection.
 - **examples/hat.py** — Multi-cut piece with token introspection.
@@ -244,7 +248,7 @@ Requires **Python 3.10+** (uses `X | Y` union syntax and `from __future__ import
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all tests (304 tests)
+# Run all tests (355 tests)
 pytest tests/ -v
 
 # Run by layer

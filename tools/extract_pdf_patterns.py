@@ -683,6 +683,28 @@ PEPPERMINT_PLAYSUIT = PatternPDF(
     ),
 )
 
+# Two A0 sheets (2384 x 3370pt) holding ~10 numbered pieces nested across
+# sizes XXS-5XL. Held back on provenance rather than printed terms: the PDF
+# states no restriction, but it is course material sold with a paid Domestika
+# course, and a purchase is a licence to use rather than to republish. Flip
+# this to True only with a licence that says so. Pieces are not mapped.
+LANTOKI_WORKER_JACKET = PatternPDF(
+    key="lantoki_worker_jacket",
+    filename="Patrones_A0.pdf",
+    sha256="6ff4e5ef70511fe6c5feaaaadadb321b287e20d5127582823a7b60c9760d7322",
+    title="Lantoki 'Chaqueta Worker Unisex', sizes XXS-5XL (A0 sheets)",
+    source_name="lantoki",
+    license="Lantoki x Domestika course material - no printed terms; paid course",
+    attribution="Lantoki / Domestika",
+    redistributable=False,
+    notice=(
+        "No restriction is printed in the PDF, but this is paid Domestika "
+        "course material. Buying a course licenses use, not republication, so "
+        "it is not committed here. --check cannot see this: it reads stated "
+        "terms only and reports the file as USABLE."
+    ),
+)
+
 PATTERN_PDFS: list[PatternPDF] = [
     BUTTERICK_RETRO_WRAP,
     MCCALLS_COSMETIC_BAG,
@@ -700,6 +722,7 @@ PATTERN_PDFS: list[PatternPDF] = [
     MAKEBRA_SOCK,
     TESSUTI_MONROE_TURTLENECK,
     PEPPERMINT_PLAYSUIT,
+    LANTOKI_WORKER_JACKET,
 ]
 
 
@@ -857,8 +880,9 @@ def print_checks(checks: list[LicenseCheck]) -> None:
     known = sum(1 for c in checks if c.known_key)
     print(f"\nusable={usable} restricted={blocked} needs-eyeball={manual} "
           f"already-registered={known}")
-    print("'USABLE' means nothing in the PDF restricts sharing — not that it is "
-          "public domain. See data/PROVENANCE.md.")
+    print("'USABLE' means nothing in the PDF *says* you cannot share it. It is "
+          "not a licence, and it cannot see provenance — paid course material "
+          "often prints no terms at all. See data/PROVENANCE.md.")
 
 
 # ── Rendering ───────────────────────────────────────────────────────────────

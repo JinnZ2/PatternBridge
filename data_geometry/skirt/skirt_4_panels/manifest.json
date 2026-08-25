@@ -1,0 +1,51 @@
+{
+  "pattern_name": "skirt_4_panels",
+  "piece_count": 4,
+  "total_cut_count": 4,
+  "garment_types": [
+    "skirt"
+  ],
+  "pieces": [
+    {
+      "name": "FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RIGHT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LEFT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

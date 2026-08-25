@@ -1,0 +1,51 @@
+{
+  "pattern_name": "skirt_waistband",
+  "piece_count": 4,
+  "total_cut_count": 4,
+  "garment_types": [
+    "skirt"
+  ],
+  "pieces": [
+    {
+      "name": "FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 4,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "WB_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 4,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "WB_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 4,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 4,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

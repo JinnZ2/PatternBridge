@@ -1,0 +1,71 @@
+{
+  "pattern_name": "wb_dress_sleeveless",
+  "piece_count": 6,
+  "total_cut_count": 6,
+  "garment_types": [
+    "dress"
+  ],
+  "pieces": [
+    {
+      "name": "TOP_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 41,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "TOP_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 31,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "SKIRT_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 4,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "SKIRT_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 4,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "WB_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 4,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "WB_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "dress",
+      "is_cut_on_fold": false,
+      "boundary_points": 4,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

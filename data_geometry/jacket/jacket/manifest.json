@@ -1,0 +1,81 @@
+{
+  "pattern_name": "jacket",
+  "piece_count": 7,
+  "total_cut_count": 7,
+  "garment_types": [
+    "jacket"
+  ],
+  "pieces": [
+    {
+      "name": "LFSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 41,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LBSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RFSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RBSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "FRONT_RIGHT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 17,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "FRONT_LEFT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 17,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

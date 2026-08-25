@@ -1,0 +1,91 @@
+{
+  "pattern_name": "wb_jumpsuit_sleeveless",
+  "piece_count": 8,
+  "total_cut_count": 8,
+  "garment_types": [
+    "other"
+  ],
+  "pieces": [
+    {
+      "name": "LBACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 27,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RBACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 27,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RFRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 27,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LFRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 27,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "WB_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 5,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "WB_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 5,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "TOP_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 41,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "TOP_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 31,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

@@ -1,0 +1,51 @@
+{
+  "pattern_name": "pants_flare_TA_pose",
+  "piece_count": 4,
+  "total_cut_count": 4,
+  "garment_types": [
+    "pants"
+  ],
+  "pieces": [
+    {
+      "name": "LBACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 40,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RBACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 40,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RFRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 40,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LFRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 40,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

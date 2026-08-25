@@ -28,7 +28,13 @@ and machine-readable output rather than a flattened PDF.
 |---|---|---|---|
 | [FreeSewing](https://freesewing.org) | Web app + open-source codebase that drafts made-to-measure patterns from your measurements — menswear, womenswear, accessories, blocks/slopers | MIT (code); CC-BY (patterns/content) | as claimed |
 | [GitHub `sewing-patterns` topic](https://github.com/topics/sewing-patterns) | Pattern generators, PDF tilers, SVG linters, foundation-paper-piecing tools | Varies — mostly MIT / GPL / CC, check each repo | as claimed |
-| [Garment Pattern Generator](https://github.com/maria-korosteleva/Garment-Pattern-Generator) | Research tool generating 3D garment datasets with sewing patterns | MIT | as claimed |
+| [Garment Pattern Generator](https://github.com/maria-korosteleva/Garment-Pattern-Generator) | Research tool generating 3D garment datasets with sewing patterns | MIT, © 2021 Maria Korosteleva | **tested — imported** |
+
+**Garment Pattern Generator is already imported.** Its 23 templates carry
+exact panel geometry — vertices plus an edge loop with Bézier curvature — which
+`tools/import_garment_patterns.py` converts into 124 PatternPiece files under
+`data_geometry/`. MIT licensed, no images, no ambiguity. It is the best-licensed
+pattern data in the project.
 
 FreeSewing is the strongest fit for PatternBridge specifically. It emits
 **SVG**, not a scanned raster — which means the geometry can go straight into
@@ -72,6 +78,7 @@ the sections above is far newer than that, including patterns that reproduce a
 | Resource | Claim | Status |
 |---|---|---|
 | Etsy — "royalty free sewing patterns" | Filter by Creative Commons Attribution to find patterns you can adapt and sell from | **disputed** |
+| Paid course patterns (Domestika, Skillshare, etc.) | Bought, so usable | **disputed** |
 
 Etsy has no Creative Commons license filter in its search, and listings are
 individually copyrighted by each seller — a shop's own blurb is the only
@@ -80,8 +87,14 @@ source of commercially-reusable patterns. If a specific seller grants those
 rights in writing, that grant is between you and them; record it in the
 `license` field of the registry entry.
 
-This is the one entry on the list that could cause real trouble if acted on as
-written, which is why it is called out rather than quietly dropped.
+This is the one entry on the original list that could cause real trouble if
+acted on as written, which is why it is called out rather than quietly dropped.
+
+**Paid course patterns** are a second trap, and a quieter one. They frequently
+print no terms at all, so `--check` reports them USABLE — a purchase licenses
+you to *use* the pattern, not to republish it. The Lantoki worker jacket in the
+registry is exactly this case. Buying something is not the same as being
+licensed to redistribute it, and no text scan can tell the difference.
 
 ---
 

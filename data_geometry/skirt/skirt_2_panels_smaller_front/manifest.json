@@ -1,0 +1,31 @@
+{
+  "pattern_name": "skirt_2_panels_smaller_front",
+  "piece_count": 2,
+  "total_cut_count": 2,
+  "garment_types": [
+    "skirt"
+  ],
+  "pieces": [
+    {
+      "name": "FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

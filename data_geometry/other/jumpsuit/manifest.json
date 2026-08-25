@@ -1,0 +1,111 @@
+{
+  "pattern_name": "jumpsuit",
+  "piece_count": 10,
+  "total_cut_count": 10,
+  "garment_types": [
+    "other"
+  ],
+  "pieces": [
+    {
+      "name": "UP_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 42,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "UP_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 32,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RBSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RFSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LFSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LBSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LBACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 38,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RBACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 38,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RFRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 38,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LFRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "other",
+      "is_cut_on_fold": false,
+      "boundary_points": 38,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}
