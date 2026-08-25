@@ -78,6 +78,9 @@ PatternBridge/
 │   ├── test_fetch_patterns.py      # Open-source pattern fetcher tests
 │   └── test_extract_pdf_patterns.py # Pattern PDF piece extractor tests
 │
+├── docs/
+│   └── PATTERN_SOURCES.md          # Where to find patterns, and their licensing
+│
 ├── tools/
 │   ├── __init__.py
 │   ├── capture_server.py           # Mobile capture server for phone-based data collection
@@ -124,7 +127,7 @@ PatternBridge/
 - **pattern_vision/preprocessor.py** — Image quality assessment + enhancement for bad photos. Log transform + CLAHE for underexposed/low-contrast images, log-polar transform for rotation-invariant features, unsharp mask for blur. Auto-detects issues via `assess_quality()` and applies corrections via `preprocess()`.
 - **tools/capture_server.py** — Flask web server for phone-based pattern image capture. Mobile-friendly UI with garment type/piece name selection, per-image annotation (fold/grain/notch/dart), and live capture history. Saves directly into PatternDataset directory structure.
 - **tools/fetch_patterns.py** — Downloads open-source pattern images from curated sources (Freesewing MIT, Wikimedia CC, GitHub CC). Auto-classifies garment type/piece from URL keywords. Saves with provenance sidecar JSON (source URL, license, attribution). Supports custom URL fetching, dry-run mode, and pluggable source registry.
-- **tools/extract_pdf_patterns.py** — Crops labeled pattern piece images out of sewing pattern PDFs into `data/<garment_type>/<piece_name>/`. Handles single-page pieces (fractional crop + ink auto-trim) and tiled full-size patterns (joins the page grid into one sheet, then crops pieces from it); `TileLayout.content_box` trims each page so patterns that overlap rather than butt-join still line up. Saved images are capped at 2400 px on the longest side. Ships a registry of source PDFs with license metadata and content hashes; entries whose PDF forbids redistribution are flagged `redistributable=False` and skipped unless `--include-restricted` is passed. `--check <path>` triages any PDF or folder for restriction language before extraction, reporting USABLE / DO NOT USE / CHECK BY EYE (scanned, no text layer) / ALREADY HAVE (hash match). See `data/PROVENANCE.md`.
+- **tools/extract_pdf_patterns.py** — Crops labeled pattern piece images out of sewing pattern PDFs into `data/<garment_type>/<piece_name>/`. Handles single-page pieces (fractional crop + ink auto-trim) and tiled full-size patterns (joins the page grid into one sheet, then crops pieces from it); `TileLayout.content_box` trims each page so patterns that overlap rather than butt-join still line up. Saved images are capped at 2400 px on the longest side. Ships a registry of source PDFs with license metadata and content hashes; entries whose PDF forbids redistribution are flagged `redistributable=False` and skipped unless `--include-restricted` is passed. `--check <path>` triages any PDF or folder for restriction language before extraction, reporting USABLE / DO NOT USE / CHECK BY EYE (scanned, no text layer) / ALREADY HAVE (hash match). See `data/PROVENANCE.md` for the policy and `docs/PATTERN_SOURCES.md` for sources.
 - **examples/sundress.py** — Full pipeline: sample data → boundary → encode → scale → SVG + PDF + JSON.
 - **examples/socks.py** — Single-piece pipeline with symmetry detection.
 - **examples/hat.py** — Multi-cut piece with token introspection.

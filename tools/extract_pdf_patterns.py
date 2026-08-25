@@ -28,7 +28,8 @@ entry carries a ``redistributable`` flag. Entries with ``redistributable=False``
 carry an explicit no-distribution notice from the PDF itself and are **skipped
 by default**; they are only extracted when you pass ``--include-restricted``,
 and they should be written somewhere untracked (see ``--data-dir``) so they are
-never committed. See ``data/PROVENANCE.md``.
+never committed. See ``data/PROVENANCE.md``, and ``docs/PATTERN_SOURCES.md``
+for where to find patterns whose licensing allows reuse in the first place.
 
 Usage:
     python tools/extract_pdf_patterns.py --check ~/Downloads   # vet before extracting

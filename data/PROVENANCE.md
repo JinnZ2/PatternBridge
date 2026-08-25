@@ -100,6 +100,12 @@ is prohibited."* Under the line above they should never have been published, so
 they have been deleted. `git log` still has them; restore with
 `git checkout f3a596b -- data/other/other/` if that call is wrong.
 
+## Where to find more patterns
+
+`docs/PATTERN_SOURCES.md` lists open-source, free, and vintage pattern
+sources with their licensing, and flags the ones whose stated terms do not
+hold up. Start there rather than hunting.
+
 ## Screening a PDF before you add it
 
 `--check` reads a PDF's text and reports whether it restricts redistribution,

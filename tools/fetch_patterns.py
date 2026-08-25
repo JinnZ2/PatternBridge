@@ -9,6 +9,9 @@ repositories and saves them into the PatternDataset directory structure:
 Each downloaded image gets a sidecar .json with source URL, license, and
 default annotations so the training pipeline can pick it up immediately.
 
+See docs/PATTERN_SOURCES.md for the wider list of pattern sources and their
+licensing; only sources with an explicit license belong in this registry.
+
 Sources (all explicitly open-licensed):
     - Freesewing.org (MIT) — parametric pattern SVGs rendered to PNG
     - Wikimedia Commons — CC-licensed sewing pattern images
