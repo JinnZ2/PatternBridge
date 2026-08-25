@@ -63,7 +63,7 @@ PatternBridge/
 ├── patterns/
 │   └── __init__.py                 # Synthetic sample data (8 garment pieces)
 │
-├── tests/                          # Unit tests (361 tests, all passing)
+├── tests/                          # Unit tests (364 tests, all passing)
 │   ├── __init__.py
 │   ├── conftest.py                 # Shared fixtures (pieces, vision results)
 │   ├── test_vision.py              # Rubric, scoring, prompt evaluator
@@ -248,7 +248,7 @@ Requires **Python 3.10+** (uses `X | Y` union syntax and `from __future__ import
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all tests (361 tests)
+# Run all tests (364 tests)
 pytest tests/ -v
 
 # Run by layer

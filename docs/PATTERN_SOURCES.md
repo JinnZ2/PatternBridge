@@ -49,12 +49,15 @@ land in `data_local/` rather than `data/`.
 
 | Resource | Highlights | Status |
 |---|---|---|
-| [Mood Sewciety](https://blog.moodfabrics.com/free-sewing-patterns/) | Large library — dresses, swimwear, lingerie, blazers, coats, menswear, costumes | **tested** — the MDF039 Lotus Legging PDF carries no stated terms |
+| [Mood Sewciety](https://blog.moodfabrics.com/free-sewing-patterns/) | Large library — dresses, swimwear, lingerie, blazers, coats, menswear, costumes | **tested** — the Lotus Legging and hood PDFs carry no stated terms |
 | [So Sew Easy](https://so-sew-easy.com/free-sewing-patterns/) | Skirts, dresses, shorts, rompers, sports bras, bags | as claimed |
 | [SewCanShe](https://www.sewcanshe.com/free-patterns) | Bags, pouches, quilts, home decor, baby items, apparel | as claimed |
 | [BERNINA Blog](https://blog.bernina.com/en/category/free-sewing-patterns/) | A4 PDFs — apparel, bags, baby items, patchwork; no login | as claimed |
 | [Peppermint Sewing School](https://peppermintmag.com/sewing-school/) | Sustainable, beginner-friendly designs | **tested** — the Playsuit PDF states *"FOR PERSONAL USE ONLY"* |
 | [Fabrics-Store](https://blog.fabrics-store.com/free-sewing-patterns/) | Linen and natural-fibre projects | as claimed |
+| [ThreadsMonthly](https://threadsmonthly.com) | Tutorials with printable pattern pieces | **tested** — the headband PDF states no terms |
+| [French Navy](https://frenchnavy.co.za) | South African indie label; sells patterns and gives some away | **tested** — the Orla dress PDF states no terms |
+| Bombazine | Fabric shop project patterns | **tested** — the oven mitt PDF states no terms |
 | Sew Mag (UK) / Love Sewing Mag | Regular free PDF drops from UK sewing magazines | as claimed |
 
 ## 3. Vintage and older catalogues

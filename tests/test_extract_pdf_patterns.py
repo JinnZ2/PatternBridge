@@ -85,6 +85,24 @@ class TestRegistry(TestCase):
                 if spec.sheet:
                     self.assertIsNotNone(pattern.tiles, spec.name)
 
+    def test_held_entries_declare_why_they_are_held(self):
+        for pattern in PATTERN_PDFS:
+            if not pattern.redistributable:
+                self.assertIn(
+                    pattern.hold_reason, ("terms", "unknown-provenance"), pattern.key
+                )
+
+    def test_publishable_entries_carry_no_hold_reason(self):
+        for pattern in PATTERN_PDFS:
+            if pattern.redistributable:
+                self.assertEqual(pattern.hold_reason, "", pattern.key)
+
+    def test_unknown_provenance_entries_are_still_skipped_by_default(self):
+        # Held for a softer reason, but held all the same.
+        for pattern in PATTERN_PDFS:
+            if pattern.hold_reason == "unknown-provenance":
+                self.assertFalse(pattern.redistributable, pattern.key)
+
     def test_restricted_entries_carry_a_notice(self):
         for pattern in PATTERN_PDFS:
             if not pattern.redistributable:

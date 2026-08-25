@@ -42,6 +42,10 @@ The copyright line printed in each source PDF:
 | Tessuti Monroe Turtleneck | `©Tessuti Fabrics 2018` — *"Our patterns are for personal use only"* | **no** |
 | Peppermint / In the Folds Playsuit | *"FOR PERSONAL USE ONLY"* | **no** |
 | Lantoki "Chaqueta Worker Unisex" | none — free download from the Domestika blog | yes — no stated terms |
+| Patterns by Mood hood | none — scanned, but carries the Mood roundel | yes — no stated terms |
+| Bombazine oven mitt | none | **no** — provenance unknown |
+| French Navy "The Orla Dress" | none — names frenchnavy.co.za | **no** — provenance unknown |
+| ThreadsMonthly wide headband | none — names ThreadsMonthly.com | **no** — provenance unknown |
 
 The line drawn here: a pattern is held back when its own text forbids sharing
 or restricts use to the person who downloaded it. A generic "all rights
@@ -67,9 +71,23 @@ caution still holds and is worth keeping in mind: **provenance is invisible to
 paid pattern that prints no terms will read as `NO TERMS`, not as blocked.
 See "When you cannot remember where a file came from" below.
 
-The ten restricted patterns are **not committed**. `extract_pdf_patterns.py`
-marks them `redistributable=False` and skips them unless `--include-restricted`
-is passed. Extract them to an untracked directory instead:
+## Two reasons a pattern is held back
+
+`extract_pdf_patterns.py` records **why** each held entry is held, in
+`hold_reason`:
+
+| `hold_reason` | Meaning | Shown by `--list` as |
+|---|---|---|
+| `terms` | the PDF itself forbids sharing | `RESTRICTED` |
+| `unknown-provenance` | it forbids nothing, but nobody can say where it came from | `LOCAL ONLY` |
+
+The second is the ordinary case for a pattern downloaded years ago: free and
+paid look identical on disk, and `--check` can only read what a document says.
+Holding those costs nothing — they still train the classifier from
+`data_local/` — so unknown provenance defaults to local rather than to a guess.
+
+Both are skipped unless `--include-restricted` is passed. Extract them to an
+untracked directory instead:
 
 ```bash
 python tools/extract_pdf_patterns.py --pdf-dir ~/patterns \

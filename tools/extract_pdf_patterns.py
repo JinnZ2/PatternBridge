@@ -157,6 +157,12 @@ class PatternPDF:
     license: str
     attribution: str
     redistributable: bool
+    # Why a held-back entry is held. "terms" means the PDF itself forbids
+    # sharing. "unknown-provenance" means it forbids nothing but nobody can
+    # say where it came from, which is the common case for a pattern
+    # downloaded years ago — free and paid look identical on disk. Empty for
+    # anything publishable.
+    hold_reason: str = ""
     notice: str = ""
     sha256: str = ""
     tiles: TileLayout | None = None
@@ -417,6 +423,7 @@ AMELIA_COAT = PatternPDF(
     license="(c) Interweave Press LLC - All rights reserved, not to be reprinted",
     attribution="Katrin Vorbeck / Interweave Press LLC",
     redistributable=False,
+    hold_reason="terms",
     notice=(
         "PDF states: 'Not to be reprinted. All rights reserved. Please respect "
         "the copyright by not forwarding or distributing this document.' "
@@ -471,6 +478,7 @@ LUXURY_FUR_COAT = PatternPDF(
     license="Copyright 2015 Stefanie Knaus - for personal use only",
     attribution="Stefanie Knaus",
     redistributable=False,
+    hold_reason="terms",
     notice=(
         "PDF states: 'for personal use only'. Do not commit these images to a "
         "public repository."
@@ -498,6 +506,7 @@ SOZO_UNDIES = PatternPDF(
             "or re-distributed",
     attribution="Zoe Edwards (SoZoWhatDoYouKnow)",
     redistributable=False,
+    hold_reason="terms",
     notice=(
         "PDF states: 'licensed for individual private home use only ... "
         "Pattern may not be shared, sold or re-distributed without owner's "
@@ -529,6 +538,7 @@ TILLY_SLIPPER_BOOTS = PatternPDF(
             "copy permission",
     attribution="Tilly and the Buttons",
     redistributable=False,
+    hold_reason="terms",
     notice=(
         "PDF states 'For personal use only' and sets permission flags that "
         "deny content copying. Do not commit these images to a public "
@@ -557,6 +567,7 @@ OLEDEMA_SOCKS = PatternPDF(
     license="OleDeMa - 'Only for personal using'",
     attribution="OleDeMa",
     redistributable=False,
+    hold_reason="terms",
     notice=(
         "PDF states 'Only for personal using'. Do not commit these images to "
         "a public repository."
@@ -592,6 +603,7 @@ FLEECEFUN_FLEECE_HAT = PatternPDF(
     license="FleeceFun.com - free pattern, may not be re-posted or emailed on",
     attribution="Angel Hickman Peterson / FleeceFun.com",
     redistributable=False,
+    hold_reason="terms",
     notice=_FLEECEFUN_NOTICE,
     tiles=TileLayout(pages=[3, 4, 5, 6], columns=2),
     pieces=[
@@ -613,6 +625,7 @@ FLEECEFUN_PLEATED_SKIRT = PatternPDF(
     license="FleeceFun.com - free pattern, may not be re-posted or emailed on",
     attribution="Angel Hickman Peterson / FleeceFun.com",
     redistributable=False,
+    hold_reason="terms",
     notice=_FLEECEFUN_NOTICE,
     tiles=TileLayout(
         pages=[3, 4, 5, 6, 7, None, 8, 9, None, 10, 11, None],
@@ -642,6 +655,7 @@ MAKEBRA_SOCK = PatternPDF(
     license="Copyright (c) Annele Salonen Tmi - personal use only",
     attribution="Annele Salonen Tmi (make Bra)",
     redistributable=False,
+    hold_reason="terms",
     notice=(
         "PDF states: 'This pattern is for your personal use only, any "
         "commercial use is prohibited.' Do not commit these images to a "
@@ -663,6 +677,7 @@ TESSUTI_MONROE_TURTLENECK = PatternPDF(
     license="(c)Tessuti Fabrics 2018 - personal use only",
     attribution="Tessuti Fabrics",
     redistributable=False,
+    hold_reason="terms",
     notice=(
         "PDF states: 'Our patterns are for personal use only.' This file is "
         "the instruction booklet and holds no pattern pieces, so nothing is "
@@ -681,6 +696,7 @@ PEPPERMINT_PLAYSUIT = PatternPDF(
     license="Peppermint Magazine x In the Folds - for personal use only",
     attribution="In the Folds / Peppermint Magazine",
     redistributable=False,
+    hold_reason="terms",
     notice=(
         "PDF states 'FOR PERSONAL USE ONLY'. Tile grid not mapped — the "
         "pattern is restricted, so its pieces are not extracted here."
@@ -731,6 +747,102 @@ LANTOKI_WORKER_JACKET = PatternPDF(
     ],
 )
 
+# Six scanned pages butt-joining 3 columns x 2 rows, holding two pieces. Carries no text at all —
+# --check could only report "no text layer" — but looking at it shows the
+# Patterns by Mood roundel, the same publisher as the Lotus Legging already in
+# data/, so it lands in the same no-stated-terms tier.
+MOOD_HOOD = PatternPDF(
+    key="mood_hood",
+    filename="HoodTemplate.pdf",
+    sha256="701c8180e441890af90e916abfcf74c390a6bc098e50d946ad6301361ff1e38f",
+    title="Patterns by Mood hood template",
+    source_name="moodfabrics",
+    license="no copyright notice or terms in PDF; free pattern from moodfabrics.com",
+    attribution="Mood Fabrics",
+    redistributable=True,
+    notice="No stated terms. Publisher identified by the roundel printed on the pieces.",
+    tiles=TileLayout(pages=list(range(1, 7)), columns=3),
+    pieces=[
+        PieceSpec("mood_hood_main", "hat", "side", sheet=True,
+                  crop=(0.01, 0.00, 0.61, 0.75)),
+        PieceSpec("mood_hood_band", "hat", "facing", sheet=True,
+                  crop=(0.61, 0.05, 0.89, 0.63), has_fold_line=True),
+    ],
+)
+
+# Held on provenance, not terms: nothing in these three forbids anything, but
+# where they came from cannot be established, and a paid pattern looks exactly
+# like a free one on disk. Extract them with --data-dir data_local.
+
+# Two halves of one mitt piece, joined along a dashed edge marked "Join the two
+# pattern pieces here". Registered as halves rather than assembled, because the
+# pages carry margins and the join would be approximate.
+BOMBAZINE_OVEN_MITT = PatternPDF(
+    key="bombazine_oven_mitt",
+    filename="bombazine_mitt1.pdf",
+    sha256="a9bb4558443992099116a31fe31d41aeb9ea9a6c86a87b14794884bbd4694c76",
+    title="Bombazine oven mitt",
+    source_name="bombazine",
+    license="no copyright notice or terms in PDF",
+    attribution="Bombazine",
+    redistributable=False,
+    hold_reason="unknown-provenance",
+    notice="No stated terms, and no way to establish whether this was free.",
+    pieces=[
+        PieceSpec("bombazine_mitt_part1", "other", "other", page=3),
+        PieceSpec("bombazine_mitt_part2", "other", "other", page=4),
+    ],
+)
+
+# Twenty tiles butt-joining 5 columns x 4 rows (PDF pages 6-25; pages 1-5 are
+# the cover, cutting layouts and instructions).
+FRENCHNAVY_ORLA_DRESS = PatternPDF(
+    key="frenchnavy_orla_dress",
+    filename="orlausletterpaper.pdf",
+    sha256="545a68f0647576582b997ca5a2ca1ee345a623cf1878a216a393cdb6c2fbde17",
+    title="French Navy 'The Orla Dress', XS-XL",
+    source_name="frenchnavy",
+    license="no copyright notice or terms in PDF; frenchnavy.co.za",
+    attribution="French Navy",
+    redistributable=False,
+    hold_reason="unknown-provenance",
+    notice=(
+        "No stated terms. French Navy sells patterns as well as giving some "
+        "away, so this could be either; nothing in the file settles it."
+    ),
+    tiles=TileLayout(pages=list(range(6, 26)), columns=5),
+    pieces=[
+        PieceSpec("orla_back_skirt", "dress", "back", sheet=True,
+                  crop=(0.00, 0.00, 0.72, 0.36)),
+        PieceSpec("orla_sleeve", "dress", "sleeve", sheet=True,
+                  crop=(0.67, 0.01, 1.00, 0.37)),
+        PieceSpec("orla_front_skirt", "dress", "front", sheet=True,
+                  crop=(0.00, 0.35, 0.71, 0.71), has_fold_line=True),
+        PieceSpec("orla_front_bodice", "dress", "front", sheet=True,
+                  crop=(0.65, 0.50, 1.00, 0.97), has_fold_line=True, dart_count=1),
+        PieceSpec("orla_back_bodice", "dress", "back", sheet=True,
+                  crop=(0.05, 0.70, 0.57, 1.00), dart_count=1),
+    ],
+)
+
+# Two pieces, one per page.
+THREADSMONTHLY_HEADBAND = PatternPDF(
+    key="threadsmonthly_headband",
+    filename="widestretchheadbandUSlettersize.pdf",
+    sha256="07e00e7fa2ca0d81d255f4810154f609aebab5f1fe2261acfc7c15b144f08e2d",
+    title="Wide stretch headband for knit fabric, sizes 17-21 inch",
+    source_name="threadsmonthly",
+    license="no copyright notice or terms in PDF; ThreadsMonthly.com tutorial",
+    attribution="ThreadsMonthly.com",
+    redistributable=False,
+    hold_reason="unknown-provenance",
+    notice="No stated terms. Names a tutorial site, which does not say it was free.",
+    pieces=[
+        PieceSpec("headband_front", "other", "front", page=3),
+        PieceSpec("headband_elastic_casing", "other", "other", page=4),
+    ],
+)
+
 PATTERN_PDFS: list[PatternPDF] = [
     BUTTERICK_RETRO_WRAP,
     MCCALLS_COSMETIC_BAG,
@@ -749,6 +861,10 @@ PATTERN_PDFS: list[PatternPDF] = [
     TESSUTI_MONROE_TURTLENECK,
     PEPPERMINT_PLAYSUIT,
     LANTOKI_WORKER_JACKET,
+    MOOD_HOOD,
+    BOMBAZINE_OVEN_MITT,
+    FRENCHNAVY_ORLA_DRESS,
+    THREADSMONTHLY_HEADBAND,
 ]
 
 
@@ -1294,7 +1410,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.list:
         for pattern in PATTERN_PDFS:
-            flag = "open" if pattern.redistributable else "RESTRICTED"
+            if pattern.redistributable:
+                flag = "open"
+            elif pattern.hold_reason == "unknown-provenance":
+                flag = "LOCAL ONLY"
+            else:
+                flag = "RESTRICTED"
             print(f"{pattern.key:24s} [{flag:10s}] {len(pattern.pieces):2d} pieces  {pattern.title}")
             print(f"{'':24s}  license: {pattern.license}")
         return 0
