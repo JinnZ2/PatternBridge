@@ -24,13 +24,28 @@ The copyright line printed in each source PDF:
 | Butterick Retro Wrap | `©2008 Butterick, The McCall Pattern Company` | yes — free promotional download |
 | McCall's Cosmetic Bag | `©2007 The McCall Pattern Company, All rights reserved.` | yes — free promotional download |
 | Great Outdoors Fishing Vest | `© Cranston Print Works` | yes — free promotional download |
+| Kwik Sew 5001 Clutch Purse | `©MMV KWIK•SEW® Pattern Co., Inc. All rights reserved.` — *"Commercial or industrial use prohibited"* | yes — bars commercial use, not redistribution |
+| Fleece Socks Tutorial | none — no notice, no author, no URL | yes — no stated terms |
 | Amelia Coat (Stitch Winter 2012) | `© Interweave Press LLC` — *"Not to be reprinted. All rights reserved. Please respect the copyright by not forwarding or distributing this document."* | **no** |
 | Luxury Fur Coat Pattern | `Copyright 2015 Stefanie Knaus` — *"for personal use only"* | **no** |
+| SoZo Undies | `© Zoe Edwards 2021` — *"licensed for individual private home use only … Pattern may not be shared, sold or re-distributed without owner's prior written consent."* | **no** |
+| Tilly and the Buttons Slipper Boots | `© Tilly and the Buttons` — *"For personal use only"*, and the PDF sets permission flags denying content copying | **no** |
+| OleDeMa sock pattern | `OleDeMa` — *"Only for personal using"* | **no** |
 
-The last two carry an explicit prohibition on redistribution, so their images
-are **not committed**. `extract_pdf_patterns.py` marks them
-`redistributable=False` and skips them unless `--include-restricted` is passed.
-Extract them to an untracked directory instead:
+The line drawn here: a pattern is held back when its own text forbids sharing
+or restricts use to the person who downloaded it. A generic "all rights
+reserved" on a free promotional download is not that — those are committed,
+matching what the repo already carried.
+
+Two edge cases worth naming. **Kwik Sew 5001** reserves all rights but the only
+use it actually prohibits is commercial or industrial, so redistribution is not
+barred. **Fleece Socks** carries no notice at all — which is not a grant, since
+copyright is automatic, but there is no restriction to honour either; treat it
+as unresolved rather than free, and re-check before relying on it.
+
+The five restricted patterns are **not committed**. `extract_pdf_patterns.py`
+marks them `redistributable=False` and skips them unless `--include-restricted`
+is passed. Extract them to an untracked directory instead:
 
 ```bash
 python tools/extract_pdf_patterns.py --pdf-dir ~/patterns \

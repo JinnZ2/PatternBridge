@@ -243,6 +243,65 @@ MCCALLS_COSMETIC_BAG = PatternPDF(
     ],
 )
 
+KWIKSEW_CLUTCH_PURSE = PatternPDF(
+    key="kwiksew_clutch_purse",
+    filename="clutch_purse.pdf",
+    title="Kwik Sew 5001 Clutch Purse, sample pattern",
+    source_name="kwiksew",
+    license="(c)MMV (2005) Kwik Sew Pattern Co., Inc. - sample pattern, "
+            "commercial/industrial use prohibited",
+    attribution="Kerstin Martensson / Kwik Sew Pattern Co., Inc.",
+    redistributable=True,
+    notice="Free sample pattern. The notice bars commercial and industrial "
+           "use; it does not bar redistribution.",
+    pieces=[
+        PieceSpec(
+            name="clutch_purse_front",
+            garment_type="other",
+            piece_name="front",
+            page=3,
+            crop=(0.08, 0.20, 0.95, 0.94),
+            has_fold_line=True,
+            notch_count=2,
+            dart_count=1,
+        ),
+        PieceSpec(
+            name="clutch_purse_back",
+            garment_type="other",
+            piece_name="back",
+            page=4,
+            crop=(0.10, 0.02, 0.95, 0.96),
+            has_fold_line=True,
+            notch_count=2,
+            dart_count=1,
+        ),
+    ],
+)
+
+# A 2012 tutorial carrying no copyright notice, no author and no URL. Absence
+# of a notice is not a grant — copyright is automatic — but nothing in the
+# document restricts use, which is why it is not flagged restricted here.
+# Sock pieces map onto the classifier vocabulary as sole -> "back", upper ->
+# "front"; the pattern's "direction of stretch" arrow is its grain marker.
+FLEECE_SOCKS = PatternPDF(
+    key="fleece_socks",
+    filename="Fleece_Socks_Tutorial.pdf",
+    title="Fleece Socks Tutorial, women's 6-11",
+    source_name="fleece_socks_tutorial",
+    license="no copyright notice in PDF; rightsholder unidentified",
+    attribution="unknown",
+    redistributable=True,
+    notice="No stated terms. Re-check before relying on this one.",
+    pieces=[
+        PieceSpec("fleece_sock_sole_upper", "sock", "back", page=5),
+        PieceSpec("fleece_sock_sole_middle", "sock", "back", page=6,
+                  has_fold_line=True),
+        PieceSpec("fleece_sock_sole_lower", "sock", "back", page=7),
+        PieceSpec("fleece_sock_upper_top", "sock", "front", page=8),
+        PieceSpec("fleece_sock_upper_toe", "sock", "front", page=9),
+    ],
+)
+
 # Stitch magazine prints its full-size insert as an 8-column x 5-row grid of
 # letter pages: the tile label is <row><column>, e.g. "3e" is row 3, column e.
 # Page 5 of the PDF is tile 1a, and pages run row-major from there. The trim
@@ -325,11 +384,100 @@ LUXURY_FUR_COAT = PatternPDF(
     ],
 )
 
+# Four A4 landscape tiles that butt-join 2x2: the title block and size chart
+# sit top-left, FRONT top-right, BACK bottom-left, GUSSET bottom-right.
+SOZO_UNDIES = PatternPDF(
+    key="sozo_undies",
+    filename="SoZoUndies_Pattern_A4_Version.pdf",
+    title="SoZo Undies, hip 32-50 inch",
+    source_name="sozo",
+    license="(c) Zoe Edwards 2021 - private home use only, may not be shared "
+            "or re-distributed",
+    attribution="Zoe Edwards (SoZoWhatDoYouKnow)",
+    redistributable=False,
+    notice=(
+        "PDF states: 'licensed for individual private home use only ... "
+        "Pattern may not be shared, sold or re-distributed without owner's "
+        "prior written consent.' Do not commit these images to a public "
+        "repository."
+    ),
+    tiles=TileLayout(pages=[1, 2, 3, 4], columns=2),
+    pieces=[
+        PieceSpec("sozo_undies_front", "other", "front", sheet=True,
+                  crop=(0.51, 0.01, 0.99, 0.48), has_fold_line=True),
+        PieceSpec("sozo_undies_back", "other", "back", sheet=True,
+                  crop=(0.03, 0.53, 0.49, 0.99), has_fold_line=True),
+        # Cropped short of the test square that shares this quadrant.
+        PieceSpec("sozo_undies_gusset", "other", "other", sheet=True,
+                  crop=(0.55, 0.54, 0.99, 0.73), has_fold_line=True),
+    ],
+)
+
+# Eight pages butt-joining 2 columns x 4 rows, one piece per row. The PDF also
+# sets permission flags that deny content copying, so extracting from it goes
+# against the publisher's stated intent as well as the personal-use line.
+TILLY_SLIPPER_BOOTS = PatternPDF(
+    key="tilly_slipper_boots",
+    filename="SLIPPER_BOOTS_PDF.pdf",
+    title="Tilly and the Buttons Slipper Boots, sizes S/M/L",
+    source_name="tilly_and_the_buttons",
+    license="(c) Tilly and the Buttons - for personal use only; PDF denies "
+            "copy permission",
+    attribution="Tilly and the Buttons",
+    redistributable=False,
+    notice=(
+        "PDF states 'For personal use only' and sets permission flags that "
+        "deny content copying. Do not commit these images to a public "
+        "repository."
+    ),
+    tiles=TileLayout(pages=list(range(1, 9)), columns=2),
+    pieces=[
+        PieceSpec("slipper_boots_base_panel", "sock", "back", sheet=True,
+                  crop=(0.25, 0.05, 1.00, 0.25)),
+        PieceSpec("slipper_boots_front_panel", "sock", "front", sheet=True,
+                  crop=(0.15, 0.25, 1.00, 0.50)),
+        PieceSpec("slipper_boots_toe_panel", "sock", "side", sheet=True,
+                  crop=(0.00, 0.50, 0.85, 0.74)),
+        PieceSpec("slipper_boots_back_panel", "sock", "back", sheet=True,
+                  crop=(0.01, 0.77, 0.99, 0.99)),
+    ],
+)
+
+# Four unlabelled image pages. Page 3 carries two pieces; the rest carry one.
+OLEDEMA_SOCKS = PatternPDF(
+    key="oledema_socks",
+    filename="pattern.pdf",
+    title="OleDeMa sock pattern",
+    source_name="oledema",
+    license="OleDeMa - 'Only for personal using'",
+    attribution="OleDeMa",
+    redistributable=False,
+    notice=(
+        "PDF states 'Only for personal using'. Do not commit these images to "
+        "a public repository."
+    ),
+    pieces=[
+        PieceSpec("oledema_sock_foot", "sock", "back", page=1),
+        PieceSpec("oledema_sock_front_a", "sock", "front", page=2),
+        PieceSpec("oledema_sock_back", "sock", "back", page=3,
+                  crop=(0.06, 0.05, 0.80, 0.64)),
+        PieceSpec("oledema_sock_front_b", "sock", "front", page=3,
+                  crop=(0.14, 0.66, 0.80, 0.99)),
+        PieceSpec("oledema_sock_top", "sock", "cuff", page=4,
+                  crop=(0.28, 0.02, 0.72, 0.98), has_fold_line=True),
+    ],
+)
+
 PATTERN_PDFS: list[PatternPDF] = [
     BUTTERICK_RETRO_WRAP,
     MCCALLS_COSMETIC_BAG,
+    KWIKSEW_CLUTCH_PURSE,
+    FLEECE_SOCKS,
     AMELIA_COAT,
     LUXURY_FUR_COAT,
+    SOZO_UNDIES,
+    TILLY_SLIPPER_BOOTS,
+    OLEDEMA_SOCKS,
 ]
 
 
