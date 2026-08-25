@@ -182,6 +182,11 @@ class LicenseCheck:
     # for when a PDF has been sitting on a phone long enough that where it
     # came from is no longer recoverable from memory.
     identity: list[str] = field(default_factory=list)
+    # Marks that tie this copy to one buyer: an emailed-to address, a "licensed
+    # to" line, an order number. Two consequences, and both matter more than
+    # the licence text: the file was almost certainly paid for, and it carries
+    # personal data that must not be republished.
+    personalization: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -843,6 +848,149 @@ THREADSMONTHLY_HEADBAND = PatternPDF(
     ],
 )
 
+
+# ── Assessed, nothing to extract ────────────────────────────────────────────
+
+# Marked "free" on its face, but the only pattern is a 17-inch circle you trace
+# from poster board; the diagrams are folding steps. No pieces to crop.
+JOANN_TREE_NAPKIN = PatternPDF(
+    key="joann_tree_napkin",
+    filename="Christmas_Tree_Napkin.pdf",
+    sha256="d6e574546158ec6d030582748b41f54487fe90641a7dae9457609f134e126bce",
+    title="Sew with Jo-Ann: Christmas tree napkins",
+    source_name="joann",
+    license="(c)2011 Jo-Ann Stores, Inc. - sheet is marked 'free'",
+    attribution="Jo-Ann Fabric and Craft Stores",
+    redistributable=True,
+    notice="Free project sheet. Holds no pattern pieces, so nothing is mapped.",
+)
+
+# Every component is a rectangle with its size given in the text. No outlines.
+BERNINA_TRAVEL_SET = PatternPDF(
+    key="bernina_travel_set",
+    filename="mens_travel_set.pdf",
+    sha256="b23e006689ff8766c85ece59799d8b3f04bbe8b9a27bafd17d7364b806be289d",
+    title="Bernina Men's Travel Set (project prj0005)",
+    source_name="bernina",
+    license="(c)2001 Bernina of America, Inc. - free project sheet",
+    attribution="Nancy Bednar / Bernina of America, Inc.",
+    redistributable=True,
+    notice="Free project sheet. All pieces are plain rectangles given as "
+           "measurements, so there is nothing to crop.",
+)
+
+# ── Held: the PDF forbids sharing ───────────────────────────────────────────
+
+P2DESIGNS_FLEECE_BEANIE = PatternPDF(
+    key="p2designs_fleece_beanie",
+    filename="EasyFleeceHat.pdf",
+    sha256="f7050f8cec23631368d2e2261042916a3af7ce0e17c1d6d17be3ebe3d89a88c2",
+    title="Quick & Easy Fleece Beanie, toddler to large adult",
+    source_name="p2designs",
+    license="(c) 2006 Patti Pierce Stone - charity or personal use only",
+    attribution="Patti Pierce Stone (p2designs.com)",
+    redistributable=False,
+    hold_reason="terms",
+    notice=(
+        "PDF states: 'This is a pattern for charity or personal use only ... "
+        "may not copy the contents to your web site or any other form of "
+        "communication.'"
+    ),
+    pieces=[
+        PieceSpec("p2designs_beanie", "hat", "side", page=1, crop=(0.0, 0.35, 1.0, 1.0)),
+    ],
+)
+
+FLEECEFUN_ROCKER_TRAPPER_HAT = PatternPDF(
+    key="fleecefun_rocker_trapper_hat",
+    filename="FleeceFun_RockerTrapperHat.pdf",
+    sha256="48a3c55657b1a698ffef4e78727a0cef9b8ff99ae1f4df112b6c3e28d503ec41",
+    title="FleeceFun Rocker trapper hat, large",
+    source_name="fleecefun",
+    license="FleeceFun.com - free pattern, may not be re-posted or emailed on",
+    attribution="Angel Hickman Peterson / FleeceFun.com",
+    redistributable=False,
+    hold_reason="terms",
+    notice=_FLEECEFUN_NOTICE,
+    tiles=TileLayout(pages=list(range(3, 11)), columns=2),
+    pieces=[
+        PieceSpec("rocker_trapper_hat_pieces", "hat", "other", sheet=True),
+    ],
+)
+
+CRAFTY_KITTY_WELLY_LINERS = PatternPDF(
+    key="crafty_kitty_welly_liners",
+    filename="bear_fox_welly_liners.pdf",
+    sha256="cbba5aa191486033d3753f071b2a9636ea3d75de2a8f88cd820b249e98d37d13",
+    title="Bear & Fox welly liners",
+    source_name="crafty_kitty",
+    license="Copyright 2014 The Crafty Kitty - for personal use only",
+    attribution="The Crafty Kitty",
+    redistributable=False,
+    hold_reason="terms",
+    notice="PDF states 'For Personal Use only' in a footer on every page.",
+    pieces=[
+        PieceSpec(f"welly_liner_p{n}", "sock", "other", page=n)
+        for n in range(1, 8)
+    ],
+)
+
+# Held on terms *and* personalised: every pattern page is watermarked with the
+# buyer's email address and purchase date. That watermark is personal data, so
+# these images must not be published even if the terms were permissive.
+SOSEWEASY_FUR_BOOTS = PatternPDF(
+    key="soseweasy_fur_boots",
+    filename="Fur_boots_Craftsy.pdf",
+    sha256="588a393c2b50de2ea34270d449b462d6c5bcd212f7b57d298efdd38de31a0adc",
+    title="So Sew Easy fur boots",
+    source_name="soseweasy",
+    license="Copyright 2017 So Sew Easy Pte Ltd - all rights reserved",
+    attribution="So Sew Easy Pte Ltd",
+    redistributable=False,
+    hold_reason="terms",
+    notice=(
+        "PDF states: 'Please do not copy, publish, sell, redistribute or alter "
+        "them in any way.' Pages are also watermarked with the buyer's email "
+        "address and purchase date - personal data that must not be published."
+    ),
+    pieces=[
+        PieceSpec("fur_boot_front", "sock", "front", page=5),
+        PieceSpec("fur_boot_top_a", "sock", "other", page=7),
+        PieceSpec("fur_boot_top_b", "sock", "other", page=8),
+        PieceSpec("fur_boot_back", "sock", "back", page=9, has_fold_line=True),
+    ],
+)
+
+# ── Held: provenance unknown ────────────────────────────────────────────────
+
+# One large CAD sheet from a pattern-digitising service. Carries no terms, but
+# "S5474" is a Simplicity commercial pattern number, so this is very likely a
+# digitised commercial pattern rather than anything freely given.
+M_SEWING_S5474_SUNDRESS = PatternPDF(
+    key="m_sewing_s5474_sundress",
+    filename="S5474_Sleeveless_sundress.pdf",
+    sha256="eaf64430bafc57654b784d4e35cadddc13db1754e3323e0252d034f7cbf2cdff",
+    title="S5474 sleeveless sundress (CAD sheet)",
+    source_name="m_sewing",
+    license="no copyright notice or terms in PDF; m-sewing.com",
+    attribution="m-sewing.com",
+    redistributable=False,
+    hold_reason="unknown-provenance",
+    notice=(
+        "No stated terms. The S5474 number matches a Simplicity commercial "
+        "pattern, so treat this as a digitisation of one until shown otherwise."
+    ),
+    pieces=[
+        PieceSpec("s5474_front", "dress", "front", page=1,
+                  crop=(0.10, 0.00, 0.76, 0.63), dart_count=2),
+        PieceSpec("s5474_back", "dress", "back", page=1,
+                  crop=(0.20, 0.62, 1.00, 1.00), dart_count=1),
+        PieceSpec("s5474_facings", "dress", "facing", page=1,
+                  crop=(0.00, 0.08, 0.11, 1.00)),
+    ],
+)
+
+
 PATTERN_PDFS: list[PatternPDF] = [
     BUTTERICK_RETRO_WRAP,
     MCCALLS_COSMETIC_BAG,
@@ -865,6 +1013,13 @@ PATTERN_PDFS: list[PatternPDF] = [
     BOMBAZINE_OVEN_MITT,
     FRENCHNAVY_ORLA_DRESS,
     THREADSMONTHLY_HEADBAND,
+    JOANN_TREE_NAPKIN,
+    BERNINA_TRAVEL_SET,
+    P2DESIGNS_FLEECE_BEANIE,
+    FLEECEFUN_ROCKER_TRAPPER_HAT,
+    CRAFTY_KITTY_WELLY_LINERS,
+    SOSEWEASY_FUR_BOOTS,
+    M_SEWING_S5474_SUNDRESS,
 ]
 
 
@@ -880,11 +1035,15 @@ PATTERN_PDFS: list[PatternPDF] = [
 # use*, which is the line data/PROVENANCE.md draws.
 RESTRICTION_SIGNALS: list[tuple[str, str]] = [
     (r"not\s+to\s+be\s+reprinted", "forbids reprinting"),
-    (r"may\s+not\s+be\s+(?:shared|re-?distributed|re-?posted|copied)",
-     "forbids sharing/redistribution"),
-    (r"may\s+not\s+re-?post", "forbids reposting"),
-    (r"not\s+for\s+(?:reproduction|redistribution)", "forbids reproduction"),
-    (r"do\s+not\s+(?:share|distribute|forward)", "forbids sharing"),
+    # A negation followed, anywhere in the same clause, by a verb of copying.
+    # Written this way because prohibitions are routinely buried in a list —
+    # "do not copy, publish, sell, redistribute or alter them" hides the word
+    # that matters four items deep, where a phrase match never finds it.
+    (r"(?:\b(?:do|does|may|must|can|should|will)\s*(?:not|n['\u2019]t)\b|\bcannot\b)"
+     r"[^.;]{0,100}?\b(?:copy|copied|copying|publish|redistribut|re-?distribut|"
+     r"shar(?:e|ing)|distribut|forward|re-?post|e-?mail|reprint|reproduc)",
+     "forbids copying/sharing"),
+    (r"not\s+for\s+(?:reproduction|redistribution|resale)", "forbids reproduction"),
     (r"not\s+forwarding\s+or\s+distributing", "forbids forwarding"),
     (r"for\s+(?:your\s+)?personal\s+use\s+only", "personal use only"),
     (r"personal\s+use\s+only", "personal use only"),
@@ -930,6 +1089,37 @@ _IDENTITY_RE = [
     re.compile(r"copyright\s+\S.{0,70}", re.I),
     re.compile(r"\b(?:pattern|patrón|modelo)\s*(?:no\.?|#|number)?\s*\d{3,6}\b", re.I),
 ]
+
+
+_EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]{2,}")
+_LICENSED_TO_RE = re.compile(
+    r"(?:licen[cs]ed\s+to|this\s+copy\s+belongs\s+to|purchased\s+by|"
+    r"sold\s+to|order\s*(?:no\.?|#|number)\s*[\w-]+)[^\n]{0,60}", re.I)
+
+
+def find_personalization(text: str) -> list[str]:
+    """
+    Find marks that tie this copy of a PDF to one buyer.
+
+    An email address only counts when its domain appears nowhere else in the
+    document as a site reference. A publisher printing its own contact address
+    beside its own URL is not a watermark; an address stamped on every page
+    whose domain the document never mentions is.
+    """
+    marks: list[str] = []
+    lowered = text.lower()
+
+    for address in dict.fromkeys(_EMAIL_RE.findall(text)):
+        domain = address.split("@")[-1].lower()
+        # The publisher's own address travels with its own site.
+        if f"//{domain}" in lowered or f"www.{domain}" in lowered:
+            continue
+        marks.append(f"stamped with {address}")
+
+    for match in _LICENSED_TO_RE.findall(text):
+        marks.append(" ".join(match.split())[:80])
+
+    return marks[:4]
 
 
 def identify_pdf(doc, text: str) -> list[str]:
@@ -991,6 +1181,7 @@ def check_pdf(path: str | Path) -> LicenseCheck:
         pages = len(doc)
         text = "\n".join(page.get_text() for page in doc)
         identity = identify_pdf(doc, text)
+        personalization = find_personalization(text)
     finally:
         doc.close()
 
@@ -1026,6 +1217,7 @@ def check_pdf(path: str | Path) -> LicenseCheck:
         known_key=known.key if known else "",
         pages=pages,
         identity=identity,
+        personalization=personalization,
     )
 
 
@@ -1048,6 +1240,20 @@ def print_checks(checks: list[LicenseCheck]) -> None:
         return
 
     for check in checks:
+        if check.personalization:
+            # Outranks everything else. A per-buyer watermark says the file was
+            # paid for — the one question a licence scan cannot answer — and it
+            # carries personal data that must never reach a public repo.
+            flag = "PERSONALISED"
+            note = check.personalization[0]
+            hint = ("this copy was almost certainly bought, and the mark is "
+                    "your own data — keep it local")
+            print(f"{flag:13s} {check.path.name}")
+            print(f"{'':13s} {note}")
+            if check.identity:
+                print(f"{'':13s} says of itself: {' | '.join(check.identity[:4])}")
+            print(f"{'':13s} -> {hint}")
+            continue
         if check.known_key:
             registered = next(p for p in PATTERN_PDFS if p.key == check.known_key)
             flag = "ALREADY HAVE"
@@ -1082,8 +1288,9 @@ def print_checks(checks: list[LicenseCheck]) -> None:
     blocked = sum(1 for c in checks if c.verdict == "restricted" and not c.known_key)
     manual = sum(1 for c in checks if c.verdict == "no text layer" and not c.known_key)
     known = sum(1 for c in checks if c.known_key)
+    marked = sum(1 for c in checks if c.personalization)
     print(f"\nno-terms={usable} restricted={blocked} needs-eyeball={manual} "
-          f"already-registered={known}")
+          f"personalised={marked} already-registered={known}")
     print("NO TERMS means the file does not say you cannot share it. It is not "
           "a licence, and it cannot see where the file came from — a pattern "
           "you paid for often prints no terms at all. When you cannot place a "

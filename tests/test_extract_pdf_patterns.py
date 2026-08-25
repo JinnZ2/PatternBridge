@@ -447,6 +447,49 @@ class TestLicenseCheck(TestCase):
         (self.root / "notes.txt").write_text("for personal use only")
         self.assertEqual(check_paths([self.root]), [])
 
+    def test_prohibition_buried_in_a_list_is_caught(self):
+        # The real miss this pattern was rewritten for: the word that matters
+        # sat fourth in a comma list, where a phrase match never found it.
+        res = self._check(
+            _FILLER + " Please do not copy, publish, sell, redistribute or alter them."
+        )
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_contraction_form_is_caught(self):
+        res = self._check(_FILLER + " Please don't print and give it to your friends by email.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_cannot_form_is_caught(self):
+        res = self._check(_FILLER + " You cannot republish or distribute this pattern.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_prohibition_does_not_leak_across_sentences(self):
+        # A negation in one sentence must not bind to a verb in the next.
+        res = self._check(
+            _FILLER + " You may not be an expert sewist. Copying is how everyone learns."
+        )
+        self.assertEqual(res.verdict, "no terms found")
+
+    def test_buyer_watermark_is_reported(self):
+        res = self._check(_FILLER + " licensed copy sent to buyer@gmail.com on 14 Nov 2021")
+        self.assertTrue(res.personalization)
+        self.assertIn("buyer@gmail.com", res.personalization[0])
+
+    def test_publisher_contact_address_is_not_a_watermark(self):
+        # Its domain travels with the publisher's own URL, so it is contact
+        # information, not a per-buyer stamp.
+        res = self._check(
+            _FILLER + " Questions? angel@fleecefun.com or visit www.fleecefun.com"
+        )
+        self.assertEqual(res.personalization, [])
+
+    def test_licensed_to_line_is_reported(self):
+        res = self._check(_FILLER + " Licensed to Jane Smith, order #44812")
+        self.assertTrue(res.personalization)
+
+    def test_clean_pattern_has_no_watermark(self):
+        self.assertEqual(self._check(_FILLER).personalization, [])
+
     def test_identity_reports_a_publisher_line(self):
         res = self._check(_FILLER + " (c)MMV Kwik-Sew Pattern Co., Inc.")
         joined = " ".join(res.identity)

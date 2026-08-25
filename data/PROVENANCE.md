@@ -46,6 +46,13 @@ The copyright line printed in each source PDF:
 | Bombazine oven mitt | none | **no** — provenance unknown |
 | French Navy "The Orla Dress" | none — names frenchnavy.co.za | **no** — provenance unknown |
 | ThreadsMonthly wide headband | none — names ThreadsMonthly.com | **no** — provenance unknown |
+| Jo-Ann Christmas tree napkins | `©2011 Jo-Ann Stores, Inc.`, sheet marked *"free"* | yes — but holds no pattern pieces |
+| Bernina Men's Travel Set | `©2001 Bernina of America, Inc.` | yes — but holds no pattern pieces |
+| p2designs Quick & Easy Fleece Beanie | `© 2006 Patti Pierce Stone` — *"charity or personal use only … may not copy the contents"* | **no** |
+| FleeceFun Rocker trapper hat | same FleeceFun terms | **no** |
+| The Crafty Kitty Bear & Fox welly liners | `Copyright 2014 The Crafty Kitty` — *"For Personal Use only"* | **no** |
+| So Sew Easy fur boots | `Copyright 2017 So Sew Easy Pte Ltd` — *"do not copy, publish, sell, redistribute"*; **watermarked with the buyer's email** | **no** |
+| S5474 sleeveless sundress (m-sewing.com CAD) | none — but S5474 is a Simplicity commercial pattern number | **no** — *removed*, see below |
 
 The line drawn here: a pattern is held back when its own text forbids sharing
 or restricts use to the person who downloaded it. A generic "all rights
@@ -136,6 +143,19 @@ output.
 
 ## Removed from the repo
 
+### S5474 sleeveless sundress — 5 images
+
+`data/dress/*/sundress_s5474_*.png` were crops of a CAD sheet from
+m-sewing.com, committed in `f3a596b` with no sidecar. The sheet states no terms
+at all, so this is a weaker case than the one below — but `S5474` is a
+**Simplicity commercial pattern number**, and the source file is now registered
+`unknown-provenance`. Publishing crops of a file the registry holds back was
+inconsistent, so they have been removed. Restore with
+`git checkout f3a596b -- data/dress/` if you disagree; the evidence here is
+inferred from the pattern number, not stated by the document.
+
+### make Bra sock pattern — 2 images
+
 `data/other/other/sock_bra_pieces_p1.png` and `sock_bra_pieces_p3.png` were
 committed before this provenance policy existed, with no sidecar recording
 where they came from. They are pages 1 and 3 of the **make Bra** sock pattern,
@@ -149,6 +169,22 @@ they have been deleted. `git log` still has them; restore with
 `docs/PATTERN_SOURCES.md` lists open-source, free, and vintage pattern
 sources with their licensing, and flags the ones whose stated terms do not
 hold up. Start there rather than hunting.
+
+## Personalised copies
+
+Some paid patterns stamp every page with the buyer's email address and
+purchase date. `--check` reports those as `PERSONALISED`, which outranks every
+other verdict, because such a mark settles two things at once:
+
+- the file was **bought** — the one question a licence scan cannot otherwise
+  answer, and the one memory cannot answer years later
+- it carries **personal data**, so those images must never be published even
+  if the terms were permissive
+
+An email address only counts as a watermark when its domain appears nowhere
+else in the document as a site reference. A publisher printing its own contact
+address beside its own URL is not a watermark; an address whose domain the
+document never mentions is.
 
 ## Screening a PDF before you add it
 
