@@ -41,7 +41,7 @@ The copyright line printed in each source PDF:
 | make Bra sock pattern | `Copyright © Annele Salonen Tmi` — *"for your personal use only, any commercial use is prohibited"* | **no** — *removed*, see below |
 | Tessuti Monroe Turtleneck | `©Tessuti Fabrics 2018` — *"Our patterns are for personal use only"* | **no** |
 | Peppermint / In the Folds Playsuit | *"FOR PERSONAL USE ONLY"* | **no** |
-| Lantoki "Chaqueta Worker Unisex" | none printed — but paid Domestika course material | **no** — see below |
+| Lantoki "Chaqueta Worker Unisex" | none — free download from the Domestika blog | yes — no stated terms |
 
 The line drawn here: a pattern is held back when its own text forbids sharing
 or restricts use to the person who downloaded it. A generic "all rights
@@ -58,15 +58,16 @@ grant, since copyright is automatic without one, but there is no stated
 restriction to honour either. Treat them as unresolved rather than free, and
 re-check before relying on them.
 
-One entry is held back on **provenance rather than printed terms**. The
-Lantoki worker jacket prints no restriction at all, so `--check` reports it
-USABLE — but it is course material sold with a paid Domestika course, and
-buying a course licenses use, not republication. This is the limit of an
-automated scan: it reads what a document *says*, and says nothing about where
-the document came from. Flip `redistributable` only with a licence that
-actually grants it.
+The Lantoki worker jacket was briefly held back here on the assumption that it
+was paid Domestika course material. It is not — it is a free download from the
+Domestika blog (published 16 January 2024 by Mónica Martín Rivas), which puts
+it in the same tier as the other no-stated-terms patterns above. The general
+caution still holds and is worth keeping in mind: **provenance is invisible to
+`--check`.** A scan reads what a document *says*, not where it came from, so a
+paid pattern that prints no terms will read as USABLE. That distinction has to
+come from you.
 
-The eleven restricted patterns are **not committed**. `extract_pdf_patterns.py`
+The ten restricted patterns are **not committed**. `extract_pdf_patterns.py`
 marks them `redistributable=False` and skips them unless `--include-restricted`
 is passed. Extract them to an untracked directory instead:
 

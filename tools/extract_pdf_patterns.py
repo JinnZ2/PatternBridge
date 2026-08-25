@@ -683,26 +683,48 @@ PEPPERMINT_PLAYSUIT = PatternPDF(
     ),
 )
 
-# Two A0 sheets (2384 x 3370pt) holding ~10 numbered pieces nested across
-# sizes XXS-5XL. Held back on provenance rather than printed terms: the PDF
-# states no restriction, but it is course material sold with a paid Domestika
-# course, and a purchase is a licence to use rather than to republish. Flip
-# this to True only with a licence that says so. Pieces are not mapped.
+# Two A0 sheets (2384 x 3370pt) holding ten numbered pieces nested across
+# sizes XXS-5XL. Sheet 1: front, front facing, and two pocket versions.
+# Sheet 2: back, sleeve, both collar parts, back facing, more pockets.
+# Pieces are nested and rotated to save paper, so several crops clip a
+# neighbour's edge.
 LANTOKI_WORKER_JACKET = PatternPDF(
     key="lantoki_worker_jacket",
     filename="Patrones_A0.pdf",
     sha256="6ff4e5ef70511fe6c5feaaaadadb321b287e20d5127582823a7b60c9760d7322",
     title="Lantoki 'Chaqueta Worker Unisex', sizes XXS-5XL (A0 sheets)",
     source_name="lantoki",
-    license="Lantoki x Domestika course material - no printed terms; paid course",
-    attribution="Lantoki / Domestika",
-    redistributable=False,
+    license="free download from the Domestika blog; no stated terms",
+    attribution="Mónica Martín Rivas / Lantoki x Domestika",
+    redistributable=True,
     notice=(
-        "No restriction is printed in the PDF, but this is paid Domestika "
-        "course material. Buying a course licenses use, not republication, so "
-        "it is not committed here. --check cannot see this: it reads stated "
-        "terms only and reports the file as USABLE."
+        "Free download published on the Domestika blog (16 Jan 2024). No "
+        "terms are printed in the PDF or shown on the download page."
     ),
+    pieces=[
+        # ── Sheet 1 ──
+        PieceSpec("lantoki_jacket_front", "jacket", "front", page=1,
+                  crop=(0.00, 0.00, 0.53, 0.98), has_fold_line=True, notch_count=4),
+        PieceSpec("lantoki_jacket_front_facing", "jacket", "facing", page=1,
+                  crop=(0.55, 0.05, 0.71, 0.98), notch_count=2),
+        PieceSpec("lantoki_jacket_upper_pocket", "jacket", "pocket", page=1,
+                  crop=(0.80, 0.02, 0.98, 0.19)),
+        PieceSpec("lantoki_jacket_pocket_c", "jacket", "pocket", page=1,
+                  crop=(0.74, 0.20, 0.99, 0.44)),
+        # ── Sheet 2 ──
+        PieceSpec("lantoki_jacket_pocket_ab", "jacket", "pocket", page=2,
+                  crop=(0.00, 0.01, 0.25, 0.23)),
+        PieceSpec("lantoki_jacket_top_collar", "jacket", "collar", page=2,
+                  crop=(0.24, 0.08, 0.60, 0.21), has_fold_line=True),
+        PieceSpec("lantoki_jacket_back", "jacket", "back", page=2,
+                  crop=(0.46, 0.00, 1.00, 0.98), notch_count=4),
+        PieceSpec("lantoki_jacket_back_facing", "jacket", "facing", page=2,
+                  crop=(0.22, 0.22, 0.47, 0.41), has_fold_line=True),
+        PieceSpec("lantoki_jacket_collar", "jacket", "collar", page=2,
+                  crop=(0.09, 0.29, 0.47, 0.52)),
+        PieceSpec("lantoki_jacket_sleeve", "jacket", "sleeve", page=2,
+                  crop=(0.00, 0.41, 0.46, 0.99), notch_count=2),
+    ],
 )
 
 PATTERN_PDFS: list[PatternPDF] = [

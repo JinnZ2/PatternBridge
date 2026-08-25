@@ -91,10 +91,15 @@ This is the one entry on the original list that could cause real trouble if
 acted on as written, which is why it is called out rather than quietly dropped.
 
 **Paid course patterns** are a second trap, and a quieter one. They frequently
-print no terms at all, so `--check` reports them USABLE — a purchase licenses
-you to *use* the pattern, not to republish it. The Lantoki worker jacket in the
-registry is exactly this case. Buying something is not the same as being
-licensed to redistribute it, and no text scan can tell the difference.
+print no terms at all, so `--check` reports them USABLE — but a purchase
+licenses you to *use* the pattern, not to republish it. Buying something is not
+the same as being licensed to redistribute it, and no text scan can tell the
+difference: provenance is exactly what a text scan cannot see.
+
+Note the inverse trap too. Domestika publishes *free* patterns on its blog
+alongside its paid courses — the Lantoki worker jacket in `data/` is one — so
+"came from a course platform" is not itself a reason to reject a pattern.
+Check where the specific file was published.
 
 ---
 
