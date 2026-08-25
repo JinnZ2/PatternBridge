@@ -91,7 +91,7 @@ This is the one entry on the original list that could cause real trouble if
 acted on as written, which is why it is called out rather than quietly dropped.
 
 **Paid course patterns** are a second trap, and a quieter one. They frequently
-print no terms at all, so `--check` reports them USABLE — but a purchase
+print no terms at all, so `--check` reports them `NO TERMS` — but a purchase
 licenses you to *use* the pattern, not to republish it. Buying something is not
 the same as being licensed to redistribute it, and no text scan can tell the
 difference: provenance is exactly what a text scan cannot see.
@@ -112,6 +112,9 @@ Check where the specific file was published.
    [Mood Sewciety](https://blog.moodfabrics.com/free-sewing-patterns/) or
    [So Sew Easy](https://so-sew-easy.com/free-sewing-patterns/).
 3. **Whatever the source** → run `--check` on it before it goes near `data/`.
+4. **If you cannot place a file** → extract it with `--data-dir data_local`.
+   It still trains the classifier; it just is not published. That is the right
+   default for anything downloaded long enough ago that its origin is gone.
 
 ## Adding a source to the fetcher
 

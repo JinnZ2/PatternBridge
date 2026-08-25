@@ -429,6 +429,33 @@ class TestLicenseCheck(TestCase):
         (self.root / "notes.txt").write_text("for personal use only")
         self.assertEqual(check_paths([self.root]), [])
 
+    def test_identity_reports_a_publisher_line(self):
+        res = self._check(_FILLER + " (c)MMV Kwik-Sew Pattern Co., Inc.")
+        joined = " ".join(res.identity)
+        self.assertIn("Kwik-Sew", joined)
+
+    def test_identity_reports_a_url(self):
+        res = self._check(_FILLER + " Find more at www.example-patterns.com today")
+        self.assertTrue(any("example-patterns.com" in line for line in res.identity))
+
+    def test_identity_reports_a_pattern_number(self):
+        res = self._check(_FILLER + " Pattern 5001 for the clutch purse")
+        self.assertTrue(any("5001" in line for line in res.identity))
+
+    def test_identity_is_capped(self):
+        noisy = _FILLER + " ".join(f"http://example{i}.com" for i in range(30))
+        self.assertLessEqual(len(self._check(noisy).identity), 6)
+
+    def test_identity_is_empty_when_the_file_says_nothing(self):
+        path = self.root / "silent.pdf"
+        _make_pdf(path, pages=1)  # drawings only, no text, no metadata
+        self.assertEqual(check_pdf(path).identity, [])
+
+    def test_identity_does_not_change_the_verdict(self):
+        # Naming a publisher is not a restriction.
+        res = self._check(_FILLER + " (c)MMV Kwik-Sew Pattern Co., Inc.")
+        self.assertEqual(res.verdict, "no terms found")
+
     def test_registry_hashes_are_well_formed(self):
         for pattern in PATTERN_PDFS:
             if pattern.sha256:

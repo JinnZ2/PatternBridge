@@ -64,8 +64,8 @@ Domestika blog (published 16 January 2024 by Mónica Martín Rivas), which puts
 it in the same tier as the other no-stated-terms patterns above. The general
 caution still holds and is worth keeping in mind: **provenance is invisible to
 `--check`.** A scan reads what a document *says*, not where it came from, so a
-paid pattern that prints no terms will read as USABLE. That distinction has to
-come from you.
+paid pattern that prints no terms will read as `NO TERMS`, not as blocked.
+See "When you cannot remember where a file came from" below.
 
 The ten restricted patterns are **not committed**. `extract_pdf_patterns.py`
 marks them `redistributable=False` and skips them unless `--include-restricted`
@@ -146,10 +146,23 @@ Four verdicts:
 
 | Verdict | Meaning |
 |---|---|
-| `USABLE` | nothing in the text restricts sharing |
+| `NO TERMS` | nothing in the text restricts sharing |
 | `DO NOT USE` | a restriction was found; the matching sentence is quoted |
 | `CHECK BY EYE` | scanned PDF with no searchable text — terms may be in the artwork |
 | `ALREADY HAVE` | matches a registry entry by content hash, even if renamed |
+
+Each result also prints a **"says of itself"** line — title, author, publisher,
+URL, pattern number, date. That is not licensing; it is a search handle for a
+file whose origin you no longer remember. A PDF saved years ago under a
+meaningless filename will usually still name its publisher:
+
+```
+NO TERMS      some-old-download.pdf
+              nothing restricts sharing in 6 pages
+              says of itself: title: 5001.purse | author: Aimee |
+                              www.kwiksew.com | ©MMV KWIK•SEW® Pattern Co., Inc.
+              -> not a licence — keep local unless you know it was free
+```
 
 `CHECK BY EYE` exists because a text scan cannot read a restriction printed
 inside a scanned image. The OleDeMa sock pattern is exactly that case: its
@@ -159,6 +172,28 @@ there would have been a false all-clear.
 The scan deliberately does **not** treat a bare "all rights reserved" as a
 block — free promotional patterns print it alongside permission to download,
 and blocking on it would reject most usable patterns.
+
+### When you cannot remember where a file came from
+
+`NO TERMS` is not `USABLE`, which is why it is not called that. A pattern
+someone paid for frequently prints no terms at all, so the scan cannot
+distinguish a free download from a purchase — and if the download happened
+years ago, neither can memory.
+
+The default when provenance is unrecoverable is simple and costs nothing:
+
+```bash
+python tools/extract_pdf_patterns.py --pdf-dir ~/patterns --data-dir data_local
+```
+
+`data_local/` is gitignored. `PatternDataset` reads either tree, so the pieces
+still train the classifier; they just are not published. Move a pattern into
+`data/` only when something positively identifies it as free — a "free
+download" page, an open licence, a publisher's free-pattern section.
+
+Nothing is lost by defaulting to local. The published dataset already has
+enough openly-licensed material to stand on its own, and `data_geometry/`
+adds 124 pieces with no licensing question at all.
 
 ## Sources with nothing to extract
 

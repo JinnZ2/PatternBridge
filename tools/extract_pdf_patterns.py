@@ -172,6 +172,10 @@ class LicenseCheck:
     evidence: list[str] = field(default_factory=list)
     known_key: str = ""   # registry entry this file matches, if any
     pages: int = 0
+    # Anything the file says about itself. Not licensing — a search handle,
+    # for when a PDF has been sitting on a phone long enough that where it
+    # came from is no longer recoverable from memory.
+    identity: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -800,6 +804,56 @@ def find_registry_entry(path: Path) -> PatternPDF | None:
     return None
 
 
+# Lines naming a publisher, designer, or pattern number are the useful
+# handles for looking a forgotten pattern back up.
+_IDENTITY_RE = [
+    re.compile(r"https?://[^\s)>\]]+", re.I),
+    re.compile(r"(?:www\.)[\w.-]+\.[a-z]{2,}", re.I),
+    # Both the glyph and the ASCII fallback some PDFs use.
+    re.compile(r"(?:©|\(c\))\s*\S.{0,70}", re.I),
+    re.compile(r"copyright\s+\S.{0,70}", re.I),
+    re.compile(r"\b(?:pattern|patrón|modelo)\s*(?:no\.?|#|number)?\s*\d{3,6}\b", re.I),
+]
+
+
+def identify_pdf(doc, text: str) -> list[str]:
+    """
+    Collect whatever a PDF says about its own origin.
+
+    This is deliberately not a licensing signal. It exists so a file whose
+    provenance has been forgotten still yields something searchable — a
+    publisher, a designer, a URL, a pattern number.
+    """
+    found: list[str] = []
+    seen: set[str] = set()
+
+    meta = getattr(doc, "metadata", None) or {}
+
+    def add(entry: str) -> None:
+        entry = " ".join(entry.split())[:90]
+        if len(entry) >= 4 and entry.lower() not in seen:
+            seen.add(entry.lower())
+            found.append(entry)
+
+    # Title and author name the thing; a publisher line or URL says who sold
+    # it; the date is the weakest handle, so it goes last.
+    for key in ("title", "author"):
+        if (meta.get(key) or "").strip():
+            add(f"{key}: {meta[key].strip()}")
+
+    for regex in _IDENTITY_RE:
+        for match in regex.findall(text):
+            add(str(match))
+            if len(found) >= 6:
+                break
+
+    created = (meta.get("creationDate") or "").strip()
+    if created.startswith("D:") and len(created) >= 10:
+        add(f"created: {created[2:6]}-{created[6:8]}-{created[8:10]}")
+
+    return found[:6]
+
+
 def check_pdf(path: str | Path) -> LicenseCheck:
     """
     Read a PDF's text and report whether it restricts redistribution.
@@ -820,6 +874,7 @@ def check_pdf(path: str | Path) -> LicenseCheck:
     try:
         pages = len(doc)
         text = "\n".join(page.get_text() for page in doc)
+        identity = identify_pdf(doc, text)
     finally:
         doc.close()
 
@@ -854,6 +909,7 @@ def check_pdf(path: str | Path) -> LicenseCheck:
         evidence=evidence,
         known_key=known.key if known else "",
         pages=pages,
+        identity=identity,
     )
 
 
@@ -880,31 +936,43 @@ def print_checks(checks: list[LicenseCheck]) -> None:
             registered = next(p for p in PATTERN_PDFS if p.key == check.known_key)
             flag = "ALREADY HAVE"
             note = f"registered as {registered.key}"
+            hint = ""
         elif check.verdict == "restricted":
             flag = "DO NOT USE"
             note = check.evidence[0]
+            hint = ""
         elif check.verdict == "no text layer":
             flag = "CHECK BY EYE"
             note = (f"{check.pages} scanned page(s), no searchable text — "
                     "terms may be printed in the artwork")
+            hint = "keep local until you have looked at it"
         elif check.verdict == "unreadable":
             flag = "UNREADABLE"
             note = "could not open this file"
+            hint = ""
         else:
-            flag = "USABLE"
-            note = f"no restriction found in {check.pages} pages"
+            flag = "NO TERMS"
+            note = f"nothing restricts sharing in {check.pages} pages"
+            hint = "not a licence — keep local unless you know it was free"
+
         print(f"{flag:13s} {check.path.name}")
         print(f"{'':13s} {note}")
+        if check.identity:
+            print(f"{'':13s} says of itself: {' | '.join(check.identity[:4])}")
+        if hint:
+            print(f"{'':13s} -> {hint}")
 
     usable = sum(1 for c in checks if c.verdict == "no terms found" and not c.known_key)
     blocked = sum(1 for c in checks if c.verdict == "restricted" and not c.known_key)
     manual = sum(1 for c in checks if c.verdict == "no text layer" and not c.known_key)
     known = sum(1 for c in checks if c.known_key)
-    print(f"\nusable={usable} restricted={blocked} needs-eyeball={manual} "
+    print(f"\nno-terms={usable} restricted={blocked} needs-eyeball={manual} "
           f"already-registered={known}")
-    print("'USABLE' means nothing in the PDF *says* you cannot share it. It is "
-          "not a licence, and it cannot see provenance — paid course material "
-          "often prints no terms at all. See data/PROVENANCE.md.")
+    print("NO TERMS means the file does not say you cannot share it. It is not "
+          "a licence, and it cannot see where the file came from — a pattern "
+          "you paid for often prints no terms at all. When you cannot place a "
+          "file, extract it with --data-dir data_local and keep it out of the "
+          "repo; training reads either tree. See data/PROVENANCE.md.")
 
 
 # ── Rendering ───────────────────────────────────────────────────────────────
