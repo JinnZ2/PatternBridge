@@ -75,6 +75,12 @@ TRIM_MARGIN_PX = 24
 # (~215 luma) while keeping black pattern lines.
 INK_THRESHOLD = 200
 
+# Longest side a saved image may have. A full-size piece rendered at 200 dpi
+# runs to five figures of pixels — ten times more than anything downstream
+# reads, since the classifier resizes to 224 px. Capping here keeps the
+# committed dataset small without touching legibility. 0 disables the cap.
+MAX_DIMENSION = 2400
+
 
 # ── Spec types ──────────────────────────────────────────────────────────────
 
@@ -302,6 +308,62 @@ FLEECE_SOCKS = PatternPDF(
     ],
 )
 
+# 25 numbered tiles butt-joining 5 columns x 5 rows (PDF page 1 is the print
+# calibration square, so tiles start at page 2).
+MOOD_LOTUS_LEGGING = PatternPDF(
+    key="mood_lotus_legging",
+    filename="MoodFabrics_MDF039_Lotus.pdf",
+    title="Mood Fabrics MDF039 'The Lotus Legging', sizes 0-22",
+    source_name="moodfabrics",
+    license="no copyright notice or terms in PDF; free pattern from "
+            "moodfabrics.com",
+    attribution="Mood Fabrics",
+    redistributable=True,
+    notice="No stated terms.",
+    tiles=TileLayout(pages=list(range(2, 27)), columns=5),
+    pieces=[
+        PieceSpec("lotus_legging_front_knee", "pants", "front", sheet=True,
+                  crop=(0.39, 0.01, 0.72, 0.23)),
+        PieceSpec("lotus_legging_front_thigh", "pants", "front", sheet=True,
+                  crop=(0.70, 0.01, 1.00, 0.31)),
+        PieceSpec("lotus_legging_back", "pants", "back", sheet=True,
+                  crop=(0.00, 0.00, 0.42, 0.96)),
+        PieceSpec("lotus_legging_lower_front", "pants", "front", sheet=True,
+                  crop=(0.46, 0.24, 0.77, 0.60)),
+        PieceSpec("lotus_legging_upper_front", "pants", "front", sheet=True,
+                  crop=(0.38, 0.60, 0.79, 0.98)),
+        PieceSpec("lotus_legging_waistband", "pants", "waistband", sheet=True,
+                  crop=(0.76, 0.43, 1.00, 0.93), has_fold_line=True),
+    ],
+)
+
+# Eight landscape tiles, 2 columns x 4 rows. These pages overlap by 88pt
+# rather than butt-joining: the grey registration squares mark a 704 x 522.5pt
+# content box, and aligning on those squares is what makes the curves meet.
+# Assembled, the sheet is one symmetric pants pattern split down an optional
+# side seam — BACK to the left of it, FRONT to the right.
+ZUNES_KIDS_PANTS = PatternPDF(
+    key="zunes_kids_pants",
+    filename="KidsPantsPattern.pdf",
+    title="Zune's Sewing Therapy Kids Pants, sizes 6M-5T",
+    source_name="zunes_sewing_therapy",
+    license="no copyright notice or terms in PDF",
+    attribution="Zune's Sewing Therapy",
+    redistributable=True,
+    notice="No stated terms.",
+    tiles=TileLayout(
+        pages=list(range(1, 9)),
+        columns=2,
+        content_box=(42.5 / 792, 44.0 / 612, 746.5 / 792, 566.5 / 612),
+    ),
+    pieces=[
+        PieceSpec("kids_pants_back", "pants", "back", sheet=True,
+                  crop=(0.05, 0.03, 0.535, 0.99)),
+        PieceSpec("kids_pants_front", "pants", "front", sheet=True,
+                  crop=(0.528, 0.03, 0.95, 0.99)),
+    ],
+)
+
 # Stitch magazine prints its full-size insert as an 8-column x 5-row grid of
 # letter pages: the tile label is <row><column>, e.g. "3e" is row 3, column e.
 # Page 5 of the PDF is tile 1a, and pages run row-major from there. The trim
@@ -468,16 +530,77 @@ OLEDEMA_SOCKS = PatternPDF(
     ],
 )
 
+# FleeceFun's two patterns share one set of terms and both carry a repeated
+# "www.FleeceFun.com" watermark across the pattern pages.
+_FLEECEFUN_NOTICE = (
+    "PDF states: 'You may not re-post the patterns or tutorials to the web or "
+    "email them another person - if you want to share them just have them "
+    "come to www.FleeceFun.com'. Pages are also watermarked. Do not commit "
+    "these images to a public repository."
+)
+
+# Four tiles butt-joining 2x2 into one nested hat piece (0-3 months to adult XL).
+FLEECEFUN_FLEECE_HAT = PatternPDF(
+    key="fleecefun_fleece_hat",
+    filename="Fleece_Fu_Basic_Fleece_Hat.pdf",
+    title="FleeceFun Basic Fleece Hat, 0-3 months to adult XL",
+    source_name="fleecefun",
+    license="FleeceFun.com - free pattern, may not be re-posted or emailed on",
+    attribution="Angel Hickman Peterson / FleeceFun.com",
+    redistributable=False,
+    notice=_FLEECEFUN_NOTICE,
+    tiles=TileLayout(pages=[3, 4, 5, 6], columns=2),
+    pieces=[
+        PieceSpec("fleecefun_hat_panel", "hat", "side", sheet=True,
+                  crop=(0.00, 0.00, 1.00, 0.72)),
+    ],
+)
+
+# Nine tiles laid out 3 columns x 4 rows per the map on PDF page 2 (row 2 and
+# row 3 have no third tile). Unlike the other tiled patterns here these pages
+# carry untrimmed overlap margins rather than registration marks, so the
+# butt-join is approximate and piece crops are correspondingly generous.
+FLEECEFUN_PLEATED_SKIRT = PatternPDF(
+    key="fleecefun_pleated_skirt",
+    filename="child_pleated_skirt.pdf",
+    title="FleeceFun child's pleated skirt, size 7/8",
+    source_name="fleecefun",
+    license="FleeceFun.com - free pattern, may not be re-posted or emailed on",
+    attribution="Angel Hickman Peterson / FleeceFun.com",
+    redistributable=False,
+    notice=_FLEECEFUN_NOTICE,
+    tiles=TileLayout(
+        pages=[3, 4, 5, 6, 7, None, 8, 9, None, 10, 11, None],
+        columns=3,
+    ),
+    pieces=[
+        PieceSpec("pleated_skirt_top", "skirt", "waistband", sheet=True,
+                  crop=(0.01, 0.00, 0.66, 0.21), has_fold_line=True),
+        PieceSpec("pleated_skirt_panel_a", "skirt", "front", sheet=True,
+                  crop=(0.01, 0.20, 0.33, 0.61)),
+        PieceSpec("pleated_skirt_panel_b", "skirt", "back", sheet=True,
+                  crop=(0.34, 0.20, 0.66, 0.61)),
+        PieceSpec("pleated_mini_skirt_panel_a", "skirt", "front", sheet=True,
+                  crop=(0.01, 0.58, 0.33, 0.90)),
+        PieceSpec("pleated_mini_skirt_panel_b", "skirt", "back", sheet=True,
+                  crop=(0.34, 0.58, 0.66, 0.90)),
+    ],
+)
+
 PATTERN_PDFS: list[PatternPDF] = [
     BUTTERICK_RETRO_WRAP,
     MCCALLS_COSMETIC_BAG,
     KWIKSEW_CLUTCH_PURSE,
     FLEECE_SOCKS,
+    MOOD_LOTUS_LEGGING,
+    ZUNES_KIDS_PANTS,
     AMELIA_COAT,
     LUXURY_FUR_COAT,
     SOZO_UNDIES,
     TILLY_SLIPPER_BOOTS,
     OLEDEMA_SOCKS,
+    FLEECEFUN_FLEECE_HAT,
+    FLEECEFUN_PLEATED_SKIRT,
 ]
 
 
@@ -593,6 +716,23 @@ def autotrim(img, threshold: int = INK_THRESHOLD, margin: int = TRIM_MARGIN_PX):
     )
 
 
+def downscale(img, max_dim: int = MAX_DIMENSION):
+    """
+    Shrink an image so its longest side is at most ``max_dim``, keeping aspect.
+
+    Returns the image untouched when it already fits, or when ``max_dim`` is 0.
+    """
+    _require_deps()
+    if max_dim <= 0:
+        return img
+    longest = max(img.size)
+    if longest <= max_dim:
+        return img
+    scale = max_dim / longest
+    size = (max(1, round(img.width * scale)), max(1, round(img.height * scale)))
+    return img.resize(size, Image.LANCZOS)
+
+
 # ── Extraction ──────────────────────────────────────────────────────────────
 
 
@@ -619,6 +759,7 @@ def extract_pattern(
     dpi: int = DEFAULT_DPI,
     dry_run: bool = False,
     overwrite: bool = False,
+    max_dimension: int = MAX_DIMENSION,
 ) -> ExtractResult:
     """
     Extract every piece described by ``pattern`` out of ``pdf_path``.
@@ -630,6 +771,7 @@ def extract_pattern(
         dpi: Render resolution.
         dry_run: Report what would be written without writing it.
         overwrite: Replace images that already exist.
+        max_dimension: Cap on the longest side of a saved image; 0 disables.
 
     Returns:
         ExtractResult with counts and written paths.
@@ -672,7 +814,7 @@ def extract_pattern(
                         raise ValueError(f"{spec.name}: needs either page or sheet")
                     img = render_page(doc, spec.page, dpi=dpi, box=spec.crop)
 
-                img = autotrim(img)
+                img = downscale(autotrim(img), max_dimension)
                 dest_dir.mkdir(parents=True, exist_ok=True)
                 img.save(dest, "PNG", optimize=True)
                 dest.with_suffix(".png.json").write_text(
@@ -698,6 +840,7 @@ def extract_all(
     dry_run: bool = False,
     overwrite: bool = False,
     include_restricted: bool = False,
+    max_dimension: int = MAX_DIMENSION,
 ) -> ExtractResult:
     """
     Run every registry entry whose PDF is present in ``pdf_dir``.
@@ -729,6 +872,7 @@ def extract_all(
         res = extract_pattern(
             pdf_path, pattern, data_dir=data_dir, dpi=dpi,
             dry_run=dry_run, overwrite=overwrite,
+            max_dimension=max_dimension,
         )
         total.written += res.written
         total.skipped += res.skipped
@@ -757,6 +901,12 @@ def main(argv: list[str] | None = None) -> int:
         help="Also extract entries whose PDF forbids redistribution "
              "(write these to an untracked --data-dir)",
     )
+    parser.add_argument(
+        "--max-dimension",
+        type=int,
+        default=MAX_DIMENSION,
+        help=f"Cap the longest side of saved images (default {MAX_DIMENSION}, 0 disables)",
+    )
     parser.add_argument("--list", action="store_true", help="List registry entries and exit")
     args = parser.parse_args(argv)
 
@@ -775,6 +925,7 @@ def main(argv: list[str] | None = None) -> int:
         dry_run=args.dry_run,
         overwrite=args.overwrite,
         include_restricted=args.include_restricted,
+        max_dimension=args.max_dimension,
     )
     print(
         f"\nwritten={result.written} skipped={result.skipped} failed={result.failed}"

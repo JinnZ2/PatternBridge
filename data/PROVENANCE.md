@@ -26,11 +26,15 @@ The copyright line printed in each source PDF:
 | Great Outdoors Fishing Vest | `© Cranston Print Works` | yes — free promotional download |
 | Kwik Sew 5001 Clutch Purse | `©MMV KWIK•SEW® Pattern Co., Inc. All rights reserved.` — *"Commercial or industrial use prohibited"* | yes — bars commercial use, not redistribution |
 | Fleece Socks Tutorial | none — no notice, no author, no URL | yes — no stated terms |
+| Mood Fabrics MDF039 Lotus Legging | none | yes — no stated terms |
+| Zune's Sewing Therapy Kids Pants | none | yes — no stated terms |
 | Amelia Coat (Stitch Winter 2012) | `© Interweave Press LLC` — *"Not to be reprinted. All rights reserved. Please respect the copyright by not forwarding or distributing this document."* | **no** |
 | Luxury Fur Coat Pattern | `Copyright 2015 Stefanie Knaus` — *"for personal use only"* | **no** |
 | SoZo Undies | `© Zoe Edwards 2021` — *"licensed for individual private home use only … Pattern may not be shared, sold or re-distributed without owner's prior written consent."* | **no** |
 | Tilly and the Buttons Slipper Boots | `© Tilly and the Buttons` — *"For personal use only"*, and the PDF sets permission flags denying content copying | **no** |
 | OleDeMa sock pattern | `OleDeMa` — *"Only for personal using"* | **no** |
+| FleeceFun Basic Fleece Hat | *"You may not re-post the patterns or tutorials to the web or email them another person"*; pages watermarked | **no** |
+| FleeceFun child's pleated skirt | same FleeceFun terms | **no** |
 
 The line drawn here: a pattern is held back when its own text forbids sharing
 or restricts use to the person who downloaded it. A generic "all rights
@@ -39,11 +43,15 @@ matching what the repo already carried.
 
 Two edge cases worth naming. **Kwik Sew 5001** reserves all rights but the only
 use it actually prohibits is commercial or industrial, so redistribution is not
-barred. **Fleece Socks** carries no notice at all — which is not a grant, since
-copyright is automatic, but there is no restriction to honour either; treat it
-as unresolved rather than free, and re-check before relying on it.
+barred.
 
-The five restricted patterns are **not committed**. `extract_pdf_patterns.py`
+And three patterns — the **Fleece Socks tutorial**, **Mood Fabrics' Lotus
+Legging** and **Zune's Kids Pants** — carry no notice at all. That is not a
+grant, since copyright is automatic without one, but there is no stated
+restriction to honour either. Treat them as unresolved rather than free, and
+re-check before relying on them.
+
+The seven restricted patterns are **not committed**. `extract_pdf_patterns.py`
 marks them `redistributable=False` and skips them unless `--include-restricted`
 is passed. Extract them to an untracked directory instead:
 
@@ -78,5 +86,11 @@ piece.to_json()      # boundary_points, notches, darts, tokens
 
 If a restricted pattern needs to live in the repo, prefer committing the
 encoded geometry over the page image.
+
+## Sources with nothing to extract
+
+`socks_pattern_sewing_instructions.pdf` is the assembly sheet that accompanies
+the OleDeMa sock pattern — construction steps only, no pattern pieces. It is
+not in the registry because there is nothing to crop out of it.
 
 This is engineering guidance for organizing the dataset, not legal advice.

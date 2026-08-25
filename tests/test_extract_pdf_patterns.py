@@ -15,6 +15,7 @@ from tools.extract_pdf_patterns import (
     PATTERN_PDFS,
     AMELIA_COAT,
     LUXURY_FUR_COAT,
+    ZUNES_KIDS_PANTS,
     ExtractResult,
     PatternPDF,
     PieceSpec,
@@ -22,6 +23,7 @@ from tools.extract_pdf_patterns import (
     assemble_sheet,
     autotrim,
     crop_fraction,
+    downscale,
     extract_all,
     extract_pattern,
     main,
@@ -97,6 +99,15 @@ class TestTileLayout(TestCase):
     def test_rows_round_up_for_ragged_grid(self):
         self.assertEqual(TileLayout(pages=[1, 2, 3], columns=2).rows, 2)
 
+    def test_kids_pants_content_box_is_inset_from_the_page(self):
+        # These pages overlap rather than butt-join; the trim box is what makes
+        # the assembled curves meet, so a full-page box here would be a bug.
+        x0, y0, x1, y1 = ZUNES_KIDS_PANTS.tiles.content_box
+        self.assertGreater(x0, 0.0)
+        self.assertGreater(y0, 0.0)
+        self.assertLess(x1, 1.0)
+        self.assertLess(y1, 1.0)
+
     def test_amelia_grid_covers_every_tile_page(self):
         layout = AMELIA_COAT.tiles
         self.assertEqual(layout.columns, 8)
@@ -125,6 +136,26 @@ class TestImageHelpers(TestCase):
     def test_autotrim_returns_blank_image_unchanged(self):
         img = Image.new("RGB", (50, 60), "white")
         self.assertEqual(autotrim(img).size, (50, 60))
+
+    def test_downscale_caps_longest_side_and_keeps_aspect(self):
+        out = downscale(Image.new("RGB", (4000, 1000)), max_dim=2000)
+        self.assertEqual(out.size, (2000, 500))
+
+    def test_downscale_caps_on_height_when_portrait(self):
+        out = downscale(Image.new("RGB", (500, 5000)), max_dim=1000)
+        self.assertEqual(out.size, (100, 1000))
+
+    def test_downscale_leaves_small_images_alone(self):
+        img = Image.new("RGB", (300, 200))
+        self.assertEqual(downscale(img, max_dim=2000).size, (300, 200))
+
+    def test_downscale_disabled_by_zero(self):
+        img = Image.new("RGB", (9000, 20))
+        self.assertEqual(downscale(img, max_dim=0).size, (9000, 20))
+
+    def test_downscale_never_produces_a_zero_dimension(self):
+        out = downscale(Image.new("RGB", (10000, 3)), max_dim=100)
+        self.assertGreaterEqual(min(out.size), 1)
 
 
 class TestRendering(TestCase):
@@ -195,6 +226,13 @@ class TestExtractPattern(TestCase):
         self.assertEqual(meta["license"], "test-license")
         self.assertEqual(meta["attribution"], "tester")
         self.assertTrue(meta["redistributable"])
+
+    def test_saved_image_respects_max_dimension(self):
+        extract_pattern(
+            self.pdf, self.pattern, data_dir=self.data, dpi=150, max_dimension=64
+        )
+        img = Image.open(self.data / "jacket" / "front" / "sample_front.png")
+        self.assertLessEqual(max(img.size), 64)
 
     def test_dry_run_writes_nothing(self):
         res = extract_pattern(self.pdf, self.pattern, data_dir=self.data, dpi=36, dry_run=True)
