@@ -1,0 +1,61 @@
+{
+  "name": "WB_BACK",
+  "piece_number": null,
+  "cut_quantity": 1,
+  "full_cut_quantity": 1,
+  "garment_type": "skirt",
+  "pattern_brand": "garment-pattern-generator",
+  "pattern_id": "skirt_waistband",
+  "size_label": "",
+  "units": "inches",
+  "boundary_points": [
+    [
+      -5.905511811023621,
+      0.7874015748031495
+    ],
+    [
+      5.905511811023621,
+      0.7874015748031495
+    ],
+    [
+      5.905511811023621,
+      -0.7874015748031495
+    ],
+    [
+      -5.905511811023621,
+      -0.7874015748031495
+    ]
+  ],
+  "grain_line": {
+    "start": [
+      0.0,
+      -0.6299212598425197
+    ],
+    "end": [
+      0.0,
+      0.6299212598425197
+    ],
+    "angle_degrees": 90.0
+  },
+  "fold_line": null,
+  "notches": [],
+  "darts": [],
+  "seam_allowance": null,
+  "lengthen_shorten_lines": [],
+  "symmetry_detected": false,
+  "vision_scores": {},
+  "total_vision_score": 100.0,
+  "band_label": "Imported geometry - exact boundary from template; no notch, dart, or seam allowance data",
+  "target_measurements": {},
+  "ease_allowances": {},
+  "image_source": "garment-pattern-generator/skirt_waistband.json#wb_back",
+  "image_quality_notes": "",
+  "computed": {
+    "is_encodable": true,
+    "is_cut_on_fold": false,
+    "needs_better_image": false,
+    "has_darts": false,
+    "boundary_point_count": 4,
+    "token_count": 0
+  }
+}

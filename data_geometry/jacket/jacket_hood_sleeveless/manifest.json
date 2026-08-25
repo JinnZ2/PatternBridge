@@ -1,0 +1,61 @@
+{
+  "pattern_name": "jacket_hood_sleeveless",
+  "piece_count": 5,
+  "total_cut_count": 5,
+  "garment_types": [
+    "jacket"
+  ],
+  "pieces": [
+    {
+      "name": "BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 31,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "FRONT_RIGHT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 17,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "FRONT_LEFT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 17,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LHOOD",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 16,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RHOOD",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "jacket",
+      "is_cut_on_fold": false,
+      "boundary_points": 16,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

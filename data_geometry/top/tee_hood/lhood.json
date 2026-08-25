@@ -1,0 +1,109 @@
+{
+  "name": "LHOOD",
+  "piece_number": null,
+  "cut_quantity": 1,
+  "full_cut_quantity": 1,
+  "garment_type": "top",
+  "pattern_brand": "garment-pattern-generator",
+  "pattern_id": "tee_hood",
+  "size_label": "",
+  "units": "inches",
+  "boundary_points": [
+    [
+      -9.186351706036746,
+      -6.561679790026247
+    ],
+    [
+      -7.874015748031496,
+      9.84251968503937
+    ],
+    [
+      -4.593175853018373,
+      5.2493438320209975
+    ],
+    [
+      -1.3123359580052494,
+      6.299212598425196
+    ],
+    [
+      -0.5818022747156605,
+      4.4736074657334495
+    ],
+    [
+      -0.043744531933508565,
+      2.7850685331000293
+    ],
+    [
+      0.3018372703412072,
+      1.2335958005249346
+    ],
+    [
+      0.4549431321084861,
+      -0.18081073199183395
+    ],
+    [
+      0.4155730533683285,
+      -1.4581510644502769
+    ],
+    [
+      0.1837270341207347,
+      -2.598425196850393
+    ],
+    [
+      -0.24059492563429624,
+      -3.6016331291921846
+    ],
+    [
+      -0.8573928258967631,
+      -4.4677748614756485
+    ],
+    [
+      -1.6666666666666667,
+      -5.196850393700786
+    ],
+    [
+      -2.668416447944008,
+      -5.7888597258676
+    ],
+    [
+      -3.8626421697287836,
+      -6.243802857976086
+    ],
+    [
+      -5.2493438320209975,
+      -6.561679790026247
+    ]
+  ],
+  "grain_line": {
+    "start": [
+      -4.36570428696413,
+      -4.921259842519685
+    ],
+    "end": [
+      -4.36570428696413,
+      8.202099737532809
+    ],
+    "angle_degrees": 90.0
+  },
+  "fold_line": null,
+  "notches": [],
+  "darts": [],
+  "seam_allowance": null,
+  "lengthen_shorten_lines": [],
+  "symmetry_detected": false,
+  "vision_scores": {},
+  "total_vision_score": 100.0,
+  "band_label": "Imported geometry - exact boundary from template; no notch, dart, or seam allowance data",
+  "target_measurements": {},
+  "ease_allowances": {},
+  "image_source": "garment-pattern-generator/tee_hood.json#Lhood",
+  "image_quality_notes": "",
+  "computed": {
+    "is_encodable": true,
+    "is_cut_on_fold": false,
+    "needs_better_image": false,
+    "has_darts": false,
+    "boundary_point_count": 16,
+    "token_count": 0
+  }
+}

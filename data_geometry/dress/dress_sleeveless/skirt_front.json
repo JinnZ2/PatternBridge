@@ -1,0 +1,113 @@
+{
+  "name": "SKIRT_FRONT",
+  "piece_number": null,
+  "cut_quantity": 1,
+  "full_cut_quantity": 1,
+  "garment_type": "dress",
+  "pattern_brand": "garment-pattern-generator",
+  "pattern_id": "dress_sleeveless",
+  "size_label": "",
+  "units": "inches",
+  "boundary_points": [
+    [
+      -13.12335958005249,
+      11.811023622047243
+    ],
+    [
+      -10.936132983377075,
+      12.212015164771067
+    ],
+    [
+      -8.74890638670166,
+      12.540099154272381
+    ],
+    [
+      -6.561679790026245,
+      12.79527559055118
+    ],
+    [
+      -4.374453193350831,
+      12.977544473607468
+    ],
+    [
+      -2.1872265966754134,
+      13.086905803441233
+    ],
+    [
+      0.0,
+      13.12335958005249
+    ],
+    [
+      2.1872265966754165,
+      13.086905803441235
+    ],
+    [
+      4.3744531933508295,
+      12.977544473607464
+    ],
+    [
+      6.561679790026245,
+      12.79527559055118
+    ],
+    [
+      8.748906386701663,
+      12.540099154272381
+    ],
+    [
+      10.936132983377075,
+      12.212015164771069
+    ],
+    [
+      13.12335958005249,
+      11.811023622047243
+    ],
+    [
+      8.891076115485562,
+      -3.9370078740157477
+    ],
+    [
+      6.692913385826771,
+      -9.842519685039367
+    ],
+    [
+      -6.692913385826771,
+      -9.842519685039367
+    ],
+    [
+      -8.891076115485562,
+      -3.9370078740157477
+    ]
+  ],
+  "grain_line": {
+    "start": [
+      0.0,
+      -7.54593175853018
+    ],
+    "end": [
+      0.0,
+      10.826771653543304
+    ],
+    "angle_degrees": 90.0
+  },
+  "fold_line": null,
+  "notches": [],
+  "darts": [],
+  "seam_allowance": null,
+  "lengthen_shorten_lines": [],
+  "symmetry_detected": false,
+  "vision_scores": {},
+  "total_vision_score": 100.0,
+  "band_label": "Imported geometry - exact boundary from template; no notch, dart, or seam allowance data",
+  "target_measurements": {},
+  "ease_allowances": {},
+  "image_source": "garment-pattern-generator/dress_sleeveless.json#skirt_front",
+  "image_quality_notes": "",
+  "computed": {
+    "is_encodable": true,
+    "is_cut_on_fold": false,
+    "needs_better_image": false,
+    "has_darts": false,
+    "boundary_point_count": 17,
+    "token_count": 0
+  }
+}

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 from pathlib import Path
@@ -14,14 +15,20 @@ from pattern_vision.classifier import GARMENT_TYPES, PIECE_NAMES
 from tools.extract_pdf_patterns import (
     PATTERN_PDFS,
     AMELIA_COAT,
+    BUTTERICK_RETRO_WRAP,
     LUXURY_FUR_COAT,
+    ZUNES_KIDS_PANTS,
     ExtractResult,
     PatternPDF,
     PieceSpec,
     TileLayout,
     assemble_sheet,
     autotrim,
+    check_paths,
+    check_pdf,
     crop_fraction,
+    downscale,
+    find_registry_entry,
     extract_all,
     extract_pattern,
     main,
@@ -78,6 +85,24 @@ class TestRegistry(TestCase):
                 if spec.sheet:
                     self.assertIsNotNone(pattern.tiles, spec.name)
 
+    def test_held_entries_declare_why_they_are_held(self):
+        for pattern in PATTERN_PDFS:
+            if not pattern.redistributable:
+                self.assertIn(
+                    pattern.hold_reason, ("terms", "unknown-provenance"), pattern.key
+                )
+
+    def test_publishable_entries_carry_no_hold_reason(self):
+        for pattern in PATTERN_PDFS:
+            if pattern.redistributable:
+                self.assertEqual(pattern.hold_reason, "", pattern.key)
+
+    def test_unknown_provenance_entries_are_still_skipped_by_default(self):
+        # Held for a softer reason, but held all the same.
+        for pattern in PATTERN_PDFS:
+            if pattern.hold_reason == "unknown-provenance":
+                self.assertFalse(pattern.redistributable, pattern.key)
+
     def test_restricted_entries_carry_a_notice(self):
         for pattern in PATTERN_PDFS:
             if not pattern.redistributable:
@@ -96,6 +121,15 @@ class TestTileLayout(TestCase):
 
     def test_rows_round_up_for_ragged_grid(self):
         self.assertEqual(TileLayout(pages=[1, 2, 3], columns=2).rows, 2)
+
+    def test_kids_pants_content_box_is_inset_from_the_page(self):
+        # These pages overlap rather than butt-join; the trim box is what makes
+        # the assembled curves meet, so a full-page box here would be a bug.
+        x0, y0, x1, y1 = ZUNES_KIDS_PANTS.tiles.content_box
+        self.assertGreater(x0, 0.0)
+        self.assertGreater(y0, 0.0)
+        self.assertLess(x1, 1.0)
+        self.assertLess(y1, 1.0)
 
     def test_amelia_grid_covers_every_tile_page(self):
         layout = AMELIA_COAT.tiles
@@ -125,6 +159,26 @@ class TestImageHelpers(TestCase):
     def test_autotrim_returns_blank_image_unchanged(self):
         img = Image.new("RGB", (50, 60), "white")
         self.assertEqual(autotrim(img).size, (50, 60))
+
+    def test_downscale_caps_longest_side_and_keeps_aspect(self):
+        out = downscale(Image.new("RGB", (4000, 1000)), max_dim=2000)
+        self.assertEqual(out.size, (2000, 500))
+
+    def test_downscale_caps_on_height_when_portrait(self):
+        out = downscale(Image.new("RGB", (500, 5000)), max_dim=1000)
+        self.assertEqual(out.size, (100, 1000))
+
+    def test_downscale_leaves_small_images_alone(self):
+        img = Image.new("RGB", (300, 200))
+        self.assertEqual(downscale(img, max_dim=2000).size, (300, 200))
+
+    def test_downscale_disabled_by_zero(self):
+        img = Image.new("RGB", (9000, 20))
+        self.assertEqual(downscale(img, max_dim=0).size, (9000, 20))
+
+    def test_downscale_never_produces_a_zero_dimension(self):
+        out = downscale(Image.new("RGB", (10000, 3)), max_dim=100)
+        self.assertGreaterEqual(min(out.size), 1)
 
 
 class TestRendering(TestCase):
@@ -195,6 +249,13 @@ class TestExtractPattern(TestCase):
         self.assertEqual(meta["license"], "test-license")
         self.assertEqual(meta["attribution"], "tester")
         self.assertTrue(meta["redistributable"])
+
+    def test_saved_image_respects_max_dimension(self):
+        extract_pattern(
+            self.pdf, self.pattern, data_dir=self.data, dpi=150, max_dimension=64
+        )
+        img = Image.open(self.data / "jacket" / "front" / "sample_front.png")
+        self.assertLessEqual(max(img.size), 64)
 
     def test_dry_run_writes_nothing(self):
         res = extract_pattern(self.pdf, self.pattern, data_dir=self.data, dpi=36, dry_run=True)
@@ -275,6 +336,196 @@ class TestCLI(TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             code = main(["--pdf-dir", tmp, "--data-dir", str(Path(tmp) / "out"), "--dry-run"])
             self.assertEqual(code, 0)
+
+
+def _text_pdf(path: Path, body: str, pages: int = 1) -> None:
+    """Write a PDF whose first page carries ``body`` as real, searchable text."""
+    doc = fitz.open()
+    for i in range(pages):
+        page = doc.new_page(width=612, height=792)
+        page.insert_textbox(fitz.Rect(40, 40, 572, 752), body if i == 0 else "x", fontsize=9)
+    doc.save(str(path))
+    doc.close()
+
+
+# Enough filler to clear MIN_TEXT_FOR_VERDICT so the scanned-PDF path is not
+# what a terms test ends up exercising.
+_FILLER = ("This pattern includes seam allowances and a full set of pieces. " * 6)
+
+
+class TestLicenseCheck(TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _check(self, body: str, name: str = "x.pdf"):
+        path = self.root / name
+        _text_pdf(path, body)
+        return check_pdf(path)
+
+    def test_personal_use_only_is_restricted(self):
+        res = self._check(_FILLER + " This pattern is for personal use only.")
+        self.assertEqual(res.verdict, "restricted")
+        self.assertTrue(res.evidence)
+
+    def test_no_redistribution_clause_is_restricted(self):
+        res = self._check(_FILLER + " Pattern may not be shared, sold or re-distributed.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_no_reposting_clause_is_restricted(self):
+        res = self._check(_FILLER + " You may not re-post the patterns to the web.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_not_to_be_reprinted_is_restricted(self):
+        res = self._check(_FILLER + " Not to be reprinted. All rights reserved.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_bare_all_rights_reserved_is_not_restricted(self):
+        # Free promotional patterns carry this alongside permission to
+        # download; treating it as a block would reject most usable patterns.
+        res = self._check(_FILLER + " (c)2008 The Pattern Company, All rights reserved.")
+        self.assertEqual(res.verdict, "no terms found")
+
+    def test_commercial_use_ban_alone_is_not_restricted(self):
+        res = self._check(_FILLER + " Commercial or industrial use prohibited.")
+        self.assertEqual(res.verdict, "no terms found")
+
+    def test_clause_split_across_lines_is_still_caught(self):
+        res = self._check(_FILLER + " Pattern may not be\nshared or re-distributed\nwithout consent.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_pdf_without_text_layer_is_not_given_an_all_clear(self):
+        path = self.root / "scan.pdf"
+        _make_pdf(path, pages=2)  # drawings only, no text
+        res = check_pdf(path)
+        self.assertEqual(res.verdict, "no text layer")
+        self.assertNotEqual(res.verdict, "no terms found")
+
+    def test_evidence_quotes_the_matching_phrase(self):
+        res = self._check(_FILLER + " This pattern is for personal use only.")
+        self.assertIn("personal use only", res.evidence[0])
+
+    def test_registry_match_by_content_hash(self):
+        path = self.root / "renamed-by-the-user.pdf"
+        _text_pdf(path, "whatever")
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        entry = PatternPDF(
+            key="probe", filename="not-this-name.pdf", sha256=digest,
+            title="t", source_name="s", license="l", attribution="a",
+            redistributable=True,
+        )
+        PATTERN_PDFS.append(entry)
+        try:
+            self.assertIs(find_registry_entry(path), entry)
+        finally:
+            PATTERN_PDFS.remove(entry)
+
+    def test_registry_match_by_filename_when_hash_is_unknown(self):
+        path = self.root / BUTTERICK_RETRO_WRAP.filename
+        _text_pdf(path, "different bytes entirely")
+        self.assertIs(find_registry_entry(path), BUTTERICK_RETRO_WRAP)
+
+    def test_unrelated_file_matches_nothing(self):
+        path = self.root / "brand-new-pattern.pdf"
+        _text_pdf(path, "hello")
+        self.assertIsNone(find_registry_entry(path))
+
+    def test_check_paths_walks_a_directory(self):
+        _text_pdf(self.root / "a.pdf", _FILLER)
+        _text_pdf(self.root / "b.pdf", _FILLER + " for personal use only")
+        results = check_paths([self.root])
+        self.assertEqual(len(results), 2)
+        self.assertEqual(
+            {r.path.name: r.verdict for r in results},
+            {"a.pdf": "no terms found", "b.pdf": "restricted"},
+        )
+
+    def test_check_paths_ignores_non_pdfs(self):
+        (self.root / "notes.txt").write_text("for personal use only")
+        self.assertEqual(check_paths([self.root]), [])
+
+    def test_prohibition_buried_in_a_list_is_caught(self):
+        # The real miss this pattern was rewritten for: the word that matters
+        # sat fourth in a comma list, where a phrase match never found it.
+        res = self._check(
+            _FILLER + " Please do not copy, publish, sell, redistribute or alter them."
+        )
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_contraction_form_is_caught(self):
+        res = self._check(_FILLER + " Please don't print and give it to your friends by email.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_cannot_form_is_caught(self):
+        res = self._check(_FILLER + " You cannot republish or distribute this pattern.")
+        self.assertEqual(res.verdict, "restricted")
+
+    def test_prohibition_does_not_leak_across_sentences(self):
+        # A negation in one sentence must not bind to a verb in the next.
+        res = self._check(
+            _FILLER + " You may not be an expert sewist. Copying is how everyone learns."
+        )
+        self.assertEqual(res.verdict, "no terms found")
+
+    def test_buyer_watermark_is_reported(self):
+        res = self._check(_FILLER + " licensed copy sent to buyer@gmail.com on 14 Nov 2021")
+        self.assertTrue(res.personalization)
+        self.assertIn("buyer@gmail.com", res.personalization[0])
+
+    def test_publisher_contact_address_is_not_a_watermark(self):
+        # Its domain travels with the publisher's own URL, so it is contact
+        # information, not a per-buyer stamp.
+        res = self._check(
+            _FILLER + " Questions? angel@fleecefun.com or visit www.fleecefun.com"
+        )
+        self.assertEqual(res.personalization, [])
+
+    def test_licensed_to_line_is_reported(self):
+        res = self._check(_FILLER + " Licensed to Jane Smith, order #44812")
+        self.assertTrue(res.personalization)
+
+    def test_clean_pattern_has_no_watermark(self):
+        self.assertEqual(self._check(_FILLER).personalization, [])
+
+    def test_identity_reports_a_publisher_line(self):
+        res = self._check(_FILLER + " (c)MMV Kwik-Sew Pattern Co., Inc.")
+        joined = " ".join(res.identity)
+        self.assertIn("Kwik-Sew", joined)
+
+    def test_identity_reports_a_url(self):
+        res = self._check(_FILLER + " Find more at www.example-patterns.com today")
+        self.assertTrue(any("example-patterns.com" in line for line in res.identity))
+
+    def test_identity_reports_a_pattern_number(self):
+        res = self._check(_FILLER + " Pattern 5001 for the clutch purse")
+        self.assertTrue(any("5001" in line for line in res.identity))
+
+    def test_identity_is_capped(self):
+        noisy = _FILLER + " ".join(f"http://example{i}.com" for i in range(30))
+        self.assertLessEqual(len(self._check(noisy).identity), 6)
+
+    def test_identity_is_empty_when_the_file_says_nothing(self):
+        path = self.root / "silent.pdf"
+        _make_pdf(path, pages=1)  # drawings only, no text, no metadata
+        self.assertEqual(check_pdf(path).identity, [])
+
+    def test_identity_does_not_change_the_verdict(self):
+        # Naming a publisher is not a restriction.
+        res = self._check(_FILLER + " (c)MMV Kwik-Sew Pattern Co., Inc.")
+        self.assertEqual(res.verdict, "no terms found")
+
+    def test_registry_hashes_are_well_formed(self):
+        for pattern in PATTERN_PDFS:
+            if pattern.sha256:
+                self.assertEqual(len(pattern.sha256), 64, pattern.key)
+                int(pattern.sha256, 16)  # raises if not hex
+
+    def test_registry_hashes_are_unique(self):
+        hashes = [p.sha256 for p in PATTERN_PDFS if p.sha256]
+        self.assertEqual(len(hashes), len(set(hashes)))
 
 
 class TestExtractResult(TestCase):

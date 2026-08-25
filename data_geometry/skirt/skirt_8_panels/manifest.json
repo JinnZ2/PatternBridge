@@ -1,0 +1,91 @@
+{
+  "pattern_name": "skirt_8_panels",
+  "piece_count": 8,
+  "total_cut_count": 8,
+  "garment_types": [
+    "skirt"
+  ],
+  "pieces": [
+    {
+      "name": "BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RIGHT_0",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RIGHT_1",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RIGHT_2",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LEFT_0",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LEFT_1",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LEFT_2",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "skirt",
+      "is_cut_on_fold": false,
+      "boundary_points": 28,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

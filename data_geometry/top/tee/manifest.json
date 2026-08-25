@@ -1,0 +1,71 @@
+{
+  "pattern_name": "tee",
+  "piece_count": 6,
+  "total_cut_count": 6,
+  "garment_types": [
+    "top"
+  ],
+  "pieces": [
+    {
+      "name": "LFSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "top",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "top",
+      "is_cut_on_fold": false,
+      "boundary_points": 41,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LBSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "top",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RFSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "top",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RBSLEEVE",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "top",
+      "is_cut_on_fold": false,
+      "boundary_points": 15,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "top",
+      "is_cut_on_fold": false,
+      "boundary_points": 31,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}

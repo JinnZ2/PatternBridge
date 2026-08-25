@@ -1,0 +1,109 @@
+{
+  "name": "RHOOD",
+  "piece_number": null,
+  "cut_quantity": 1,
+  "full_cut_quantity": 1,
+  "garment_type": "jacket",
+  "pattern_brand": "garment-pattern-generator",
+  "pattern_id": "jacket_hood",
+  "size_label": "",
+  "units": "inches",
+  "boundary_points": [
+    [
+      -7.874015748031496,
+      -9.84251968503937
+    ],
+    [
+      -9.186351706036746,
+      6.561679790026247
+    ],
+    [
+      -5.2493438320209975,
+      6.561679790026247
+    ],
+    [
+      -3.8626421697287836,
+      6.243802857976086
+    ],
+    [
+      -2.668416447944008,
+      5.7888597258676
+    ],
+    [
+      -1.6666666666666667,
+      5.196850393700788
+    ],
+    [
+      -0.8573928258967636,
+      4.4677748614756485
+    ],
+    [
+      -0.24059492563429563,
+      3.6016331291921833
+    ],
+    [
+      0.1837270341207347,
+      2.598425196850394
+    ],
+    [
+      0.4155730533683289,
+      1.4581510644502764
+    ],
+    [
+      0.4549431321084861,
+      0.18081073199183512
+    ],
+    [
+      0.3018372703412072,
+      -1.2335958005249341
+    ],
+    [
+      -0.04374453193350862,
+      -2.7850685331000293
+    ],
+    [
+      -0.5818022747156604,
+      -4.473607465733449
+    ],
+    [
+      -1.3123359580052494,
+      -6.299212598425196
+    ],
+    [
+      -4.593175853018373,
+      -5.2493438320209975
+    ]
+  ],
+  "grain_line": {
+    "start": [
+      -4.36570428696413,
+      -8.202099737532809
+    ],
+    "end": [
+      -4.36570428696413,
+      4.921259842519685
+    ],
+    "angle_degrees": 90.0
+  },
+  "fold_line": null,
+  "notches": [],
+  "darts": [],
+  "seam_allowance": null,
+  "lengthen_shorten_lines": [],
+  "symmetry_detected": false,
+  "vision_scores": {},
+  "total_vision_score": 100.0,
+  "band_label": "Imported geometry - exact boundary from template; no notch, dart, or seam allowance data",
+  "target_measurements": {},
+  "ease_allowances": {},
+  "image_source": "garment-pattern-generator/jacket_hood.json#Rhood",
+  "image_quality_notes": "",
+  "computed": {
+    "is_encodable": true,
+    "is_cut_on_fold": false,
+    "needs_better_image": false,
+    "has_darts": false,
+    "boundary_point_count": 16,
+    "token_count": 0
+  }
+}

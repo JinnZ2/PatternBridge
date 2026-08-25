@@ -1,0 +1,105 @@
+{
+  "name": "LFSLEEVE",
+  "piece_number": null,
+  "cut_quantity": 1,
+  "full_cut_quantity": 1,
+  "garment_type": "top",
+  "pattern_brand": "garment-pattern-generator",
+  "pattern_id": "tee_hood",
+  "size_label": "",
+  "units": "inches",
+  "boundary_points": [
+    [
+      -1.3123359580052494,
+      -3.2808398950131235
+    ],
+    [
+      -1.3123359580052494,
+      3.2808398950131235
+    ],
+    [
+      3.2808398950131235,
+      3.2808398950131235
+    ],
+    [
+      3.5323709536307963,
+      2.453339165937591
+    ],
+    [
+      3.718285214348207,
+      1.6768737241178189
+    ],
+    [
+      3.838582677165354,
+      0.9514435695538057
+    ],
+    [
+      3.89326334208224,
+      0.27704870224555284
+    ],
+    [
+      3.8823272090988623,
+      -0.346310877806941
+    ],
+    [
+      3.805774278215223,
+      -0.9186351706036745
+    ],
+    [
+      3.663604549431321,
+      -1.4399241761446488
+    ],
+    [
+      3.455818022747157,
+      -1.9101778944298629
+    ],
+    [
+      3.1824146981627295,
+      -2.3293963254593177
+    ],
+    [
+      2.84339457567804,
+      -2.6975794692330126
+    ],
+    [
+      2.4387576552930885,
+      -3.0147273257509477
+    ],
+    [
+      1.968503937007874,
+      -3.2808398950131235
+    ]
+  ],
+  "grain_line": {
+    "start": [
+      1.2904636920384953,
+      -2.6246719160104988
+    ],
+    "end": [
+      1.2904636920384953,
+      2.6246719160104988
+    ],
+    "angle_degrees": 90.0
+  },
+  "fold_line": null,
+  "notches": [],
+  "darts": [],
+  "seam_allowance": null,
+  "lengthen_shorten_lines": [],
+  "symmetry_detected": false,
+  "vision_scores": {},
+  "total_vision_score": 100.0,
+  "band_label": "Imported geometry - exact boundary from template; no notch, dart, or seam allowance data",
+  "target_measurements": {},
+  "ease_allowances": {},
+  "image_source": "garment-pattern-generator/tee_hood.json#lfsleeve",
+  "image_quality_notes": "",
+  "computed": {
+    "is_encodable": true,
+    "is_cut_on_fold": false,
+    "needs_better_image": false,
+    "has_darts": false,
+    "boundary_point_count": 15,
+    "token_count": 0
+  }
+}

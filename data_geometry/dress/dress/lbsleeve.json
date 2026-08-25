@@ -1,0 +1,105 @@
+{
+  "name": "LBSLEEVE",
+  "piece_number": null,
+  "cut_quantity": 1,
+  "full_cut_quantity": 1,
+  "garment_type": "dress",
+  "pattern_brand": "garment-pattern-generator",
+  "pattern_id": "dress",
+  "size_label": "",
+  "units": "inches",
+  "boundary_points": [
+    [
+      -1.3123359580052492,
+      3.2808398950131226
+    ],
+    [
+      1.9685039370078738,
+      3.2808398950131226
+    ],
+    [
+      2.438757655293088,
+      3.014727325750947
+    ],
+    [
+      2.8433945756780403,
+      2.6975794692330126
+    ],
+    [
+      3.1824146981627295,
+      2.3293963254593173
+    ],
+    [
+      3.4558180227471564,
+      1.9101778944298629
+    ],
+    [
+      3.66360454943132,
+      1.4399241761446477
+    ],
+    [
+      3.8057742782152224,
+      0.9186351706036744
+    ],
+    [
+      3.8823272090988623,
+      0.3463108778069403
+    ],
+    [
+      3.8932633420822387,
+      -0.2770487022455523
+    ],
+    [
+      3.838582677165354,
+      -0.9514435695538055
+    ],
+    [
+      3.7182852143482057,
+      -1.6768737241178187
+    ],
+    [
+      3.5323709536307955,
+      -2.45333916593759
+    ],
+    [
+      3.2808398950131226,
+      -3.2808398950131226
+    ],
+    [
+      -1.3123359580052492,
+      -3.2808398950131226
+    ]
+  ],
+  "grain_line": {
+    "start": [
+      1.2904636920384949,
+      -2.624671916010498
+    ],
+    "end": [
+      1.2904636920384949,
+      2.624671916010498
+    ],
+    "angle_degrees": 90.0
+  },
+  "fold_line": null,
+  "notches": [],
+  "darts": [],
+  "seam_allowance": null,
+  "lengthen_shorten_lines": [],
+  "symmetry_detected": false,
+  "vision_scores": {},
+  "total_vision_score": 100.0,
+  "band_label": "Imported geometry - exact boundary from template; no notch, dart, or seam allowance data",
+  "target_measurements": {},
+  "ease_allowances": {},
+  "image_source": "garment-pattern-generator/dress.json#lbsleeve",
+  "image_quality_notes": "",
+  "computed": {
+    "is_encodable": true,
+    "is_cut_on_fold": false,
+    "needs_better_image": false,
+    "has_darts": false,
+    "boundary_point_count": 15,
+    "token_count": 0
+  }
+}

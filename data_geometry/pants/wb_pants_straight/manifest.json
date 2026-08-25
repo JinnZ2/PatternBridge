@@ -1,0 +1,71 @@
+{
+  "pattern_name": "wb_pants_straight",
+  "piece_count": 6,
+  "total_cut_count": 6,
+  "garment_types": [
+    "pants"
+  ],
+  "pieces": [
+    {
+      "name": "LBACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 27,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RBACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 27,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "RFRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 27,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "LFRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 27,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "WB_BACK",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 5,
+      "tokens": 0,
+      "vision_score": 100.0
+    },
+    {
+      "name": "WB_FRONT",
+      "piece_number": null,
+      "cut_quantity": 1,
+      "garment_type": "pants",
+      "is_cut_on_fold": false,
+      "boundary_points": 5,
+      "tokens": 0,
+      "vision_score": 100.0
+    }
+  ],
+  "notes": ""
+}
