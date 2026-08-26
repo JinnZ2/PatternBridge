@@ -2,6 +2,7 @@
 
 [![tests](https://github.com/JinnZ2/PatternBridge/actions/workflows/tests.yml/badge.svg)](https://github.com/JinnZ2/PatternBridge/actions/workflows/tests.yml)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 **Turn a sewing pattern into geometry you can resize, encode, and re-print.**
 
@@ -108,6 +109,11 @@ established — is **not committed**. It goes to a gitignored `data_local/`
 instead, where it still trains the classifier without being republished.
 
 If you contribute pattern data, run `--check` on it first.
+
+**The MIT licence covers the code, not the patterns.** Each image in `data/`
+keeps its publisher's own terms, recorded in its sidecar JSON — see
+[`DATA_LICENSE.md`](DATA_LICENSE.md). A repo licence can only give away rights
+the author actually holds.
 
 ## Status
 
