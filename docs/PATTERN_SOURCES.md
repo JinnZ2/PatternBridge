@@ -37,10 +37,21 @@ exact panel geometry — vertices plus an edge loop with Bézier curvature — w
 pattern data in the project.
 
 FreeSewing is the strongest fit for PatternBridge specifically. It emits
-**SVG**, not a scanned raster — which means the geometry can go straight into
-`pattern_geometry/` without the vision layer or any tile-assembly guesswork.
-`tools/fetch_patterns.py` already has FreeSewing entries in its source
-registry.
+**SVG**, not a scanned raster, so its geometry goes straight into
+`pattern_geometry/` with no vision layer and no tile-assembly guesswork:
+
+```bash
+python -m tools.import_svg_patterns aaron.svg --list
+```
+
+**Not yet verified against a real FreeSewing export.** The importer is
+round-trip tested against this project's own SVG output and against fixtures
+covering the whole path grammar, but no actual FreeSewing file has been through
+it — the environment it was written in cannot reach freesewing.org. When you
+run the first one, check two things: that the reported piece dimensions match
+the size FreeSewing states, and that piece names come from the group ids you
+expect. If the scale is out, pass `units_per_inch_override`; if names come back
+generic, add the offending id to `GENERIC_LABELS`.
 
 ## 2. Free PDF downloads — usually personal-use
 

@@ -34,7 +34,7 @@ muscle, is a parameter rather than an afternoon with a ruler.
 ```bash
 git clone https://github.com/JinnZ2/PatternBridge && cd PatternBridge
 pip install -e ".[dev]"
-pytest tests/ -q          # 372 tests
+pytest tests/ -q          # 428 tests
 python examples/quick_start.py
 ```
 
@@ -56,6 +56,17 @@ SVGWriter().save(result.scaled_piece, "skirt.svg")   # real-world scale, 96 px/i
 **A pipeline.** Image → vision analysis → geometry → graded pattern → SVG /
 tiled PDF / JSON. `bridge/pattern_bridge.py` runs the whole thing; every stage
 also works on its own.
+
+**An SVG importer.** Point it at any vector pattern — a FreeSewing export, an
+Inkscape tracing, a digitiser's file — and each closed path comes back as a
+piece, at true size:
+
+```bash
+python -m tools.import_svg_patterns aaron.svg --list
+```
+
+It reads real-world scale from the SVG header, so a millimetre document and a
+96 px/inch one both land correctly in inches.
 
 **124 pattern pieces as open geometry.** `data_geometry/` holds exact boundary
 data imported from [Garment-Pattern-Generator][gpg] (MIT) — skirts, pants,
@@ -118,7 +129,7 @@ the author actually holds.
 ## Status
 
 Working: geometry import, encoding, grading, SVG/PDF/JSON output, the PDF
-extractor and licence triage, 372 passing tests.
+extractor and licence triage, SVG import, 428 passing tests.
 
 Not yet proven: the vision layer has been built and unit-tested but not
 validated against a real corpus of photographed patterns — that needs training
