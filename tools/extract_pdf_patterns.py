@@ -160,8 +160,11 @@ class PatternPDF:
     # Why a held-back entry is held. "terms" means the PDF itself forbids
     # sharing. "unknown-provenance" means it forbids nothing but nobody can
     # say where it came from, which is the common case for a pattern
-    # downloaded years ago — free and paid look identical on disk. Empty for
-    # anything publishable.
+    # downloaded years ago — free and paid look identical on disk.
+    # "no-grant" is the narrower case where the publisher IS known and the
+    # download was genuinely free, but no licence covers this document, so
+    # there is nothing that grants redistribution. Empty for anything
+    # publishable.
     hold_reason: str = ""
     notice: str = ""
     sha256: str = ""
@@ -995,6 +998,13 @@ M_SEWING_S5474_SUNDRESS = PatternPDF(
 # A University of Alaska Fairbanks Cooperative Extension publication on the
 # traditional Alaska Native cloth parka. The pattern is a reduced scale drawing
 # on a 4-inch grid, six pieces across one spread, nested sizes 12/14/16.
+#
+# That grid matters for what these crops are good for. Unlike every tiled entry
+# here, this is not a print-and-tape sheet: the shapes are drawn small and each
+# grid square stands for 4 inches, so a reader redraws them full size. The
+# extracted images therefore carry correct piece SHAPE but no real-world scale.
+# They are training data for the classifier, which learns outlines; they are
+# not boundaries to hand to the geometry layer expecting inches.
 UAF_CLOTH_PARKA = PatternPDF(
     key="uaf_cloth_parka",
     filename="CCM00072ClothParka.pdf",
@@ -1002,15 +1012,27 @@ UAF_CLOTH_PARKA = PatternPDF(
     title="UAF CCM-00072 'The Cloth Parka', sizes 12-16",
     source_name="uaf_extension",
     license="University of Alaska Fairbanks Cooperative Extension Service, "
-            "published with the USDA; no terms stated in the PDF",
+            "published with the USDA; free public download, no terms stated "
+            "in the PDF. A sibling UAF resource ('Patterns and Parkas') is "
+            "CC BY-NC 4.0, but that licence is on that project, not on this "
+            "publication",
     attribution="Leif Albertson / Jane W. Windsor, UAF Cooperative Extension Service",
     redistributable=False,
-    hold_reason="unknown-provenance",
+    hold_reason="no-grant",
     notice=(
-        "No stated terms. A publicly funded extension publication is a strong "
-        "candidate for free educational reuse, and the text invites redrawing "
-        "the pattern at full size, but neither is a redistribution grant. "
-        "Worth checking UAF's publication terms before promoting it."
+        "Provenance is settled: UAF Cooperative Extension publishes this free "
+        "to the public, so it was never bought and personal use is clearly "
+        "intended. What is missing is a licence on THIS document. A sibling "
+        "UAF resource is CC BY-NC 4.0, which would permit sharing, but a "
+        "licence attached to a neighbouring project does not travel to an "
+        "unlicensed one - assuming it does is the exact error this registry "
+        "exists to prevent. Held for that reason alone, not for doubt about "
+        "where it came from. Two further reasons not to rush it: the garment "
+        "is a traditional Alaska Native design offered as an educational "
+        "resource, which is a claim on how it is reused that copyright does "
+        "not measure; and NC terms sit awkwardly in a public dataset that "
+        "anyone may put to commercial use downstream. Link to UAF's page "
+        "instead - it costs nothing and sends people to the source."
     ),
     pieces=[
         PieceSpec("parka_hood_ruff", "jacket", "other", page=4,
@@ -1713,7 +1735,7 @@ def main(argv: list[str] | None = None) -> int:
         for pattern in PATTERN_PDFS:
             if pattern.redistributable:
                 flag = "open"
-            elif pattern.hold_reason == "unknown-provenance":
+            elif pattern.hold_reason in ("unknown-provenance", "no-grant"):
                 flag = "LOCAL ONLY"
             else:
                 flag = "RESTRICTED"

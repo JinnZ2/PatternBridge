@@ -89,7 +89,9 @@ class TestRegistry(TestCase):
         for pattern in PATTERN_PDFS:
             if not pattern.redistributable:
                 self.assertIn(
-                    pattern.hold_reason, ("terms", "unknown-provenance"), pattern.key
+                    pattern.hold_reason,
+                    ("terms", "unknown-provenance", "no-grant"),
+                    pattern.key,
                 )
 
     def test_publishable_entries_carry_no_hold_reason(self):
@@ -102,6 +104,21 @@ class TestRegistry(TestCase):
         for pattern in PATTERN_PDFS:
             if pattern.hold_reason == "unknown-provenance":
                 self.assertFalse(pattern.redistributable, pattern.key)
+
+    def test_no_grant_entries_are_still_skipped_by_default(self):
+        # The softest hold of the three: publisher known, download free, use
+        # clearly invited — and still no licence granting redistribution.
+        # "Probably fine" is not a grant, so these are held too.
+        for pattern in PATTERN_PDFS:
+            if pattern.hold_reason == "no-grant":
+                self.assertFalse(pattern.redistributable, pattern.key)
+
+    def test_a_known_free_publisher_is_not_filed_as_unknown_provenance(self):
+        # The UAF parka's origin is settled: a free Cooperative Extension
+        # publication. Leaving it under "unknown-provenance" would misreport
+        # why it is held and quietly imply it might have been bought.
+        parka = next(p for p in PATTERN_PDFS if p.key == "uaf_cloth_parka")
+        self.assertEqual(parka.hold_reason, "no-grant")
 
     def test_restricted_entries_carry_a_notice(self):
         for pattern in PATTERN_PDFS:

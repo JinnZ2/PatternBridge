@@ -130,6 +130,16 @@ land in `data_local/` rather than `data/`.
 | [French Navy](https://frenchnavy.co.za) | South African indie label; sells patterns and gives some away | **tested** — the Orla dress PDF states no terms |
 | Bombazine | Fabric shop project patterns | **tested** — the oven mitt PDF states no terms |
 | Sew Mag (UK) / Love Sewing Mag | Regular free PDF drops from UK sewing magazines | as claimed |
+| [UAF Cooperative Extension](https://www.uaf.edu/ces/publications/) | Free public-interest publications, including CCM-00072 *The Cloth Parka* | **tested** — free download, no terms in the PDF |
+
+**The UAF parka is worth going to the source for.** It is a free Cooperative
+Extension publication of a traditional Alaska Native garment, offered as an
+educational resource. This repo links it rather than republishing it: the
+document carries no licence of its own, and a sibling UAF project's CC BY-NC
+terms do not extend to it. Download it from UAF directly. Note that it is a
+reduced **scale drawing on a 4-inch grid**, not a print-and-tape sheet — you
+redraw it full size rather than taping pages together. `data/PROVENANCE.md`
+records the full reasoning.
 
 ## 3. Vintage and older catalogues
 

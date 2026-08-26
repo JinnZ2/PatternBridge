@@ -34,7 +34,7 @@ muscle, is a parameter rather than an afternoon with a ruler.
 ```bash
 git clone https://github.com/JinnZ2/PatternBridge && cd PatternBridge
 pip install -e ".[dev]"
-pytest tests/ -q          # 455 tests
+pytest tests/ -q          # 457 tests
 python examples/quick_start.py
 ```
 
@@ -117,9 +117,11 @@ output, no ambiguity.
 Pattern PDFs are copyrighted even when they're free downloads, and "vintage"
 is not "public domain." Every source in this repo is recorded in
 [`data/PROVENANCE.md`](data/PROVENANCE.md) with the notice printed in its own
-PDF, and anything whose terms forbid sharing — or whose origin can't be
-established — is **not committed**. It goes to a gitignored `data_local/`
-instead, where it still trains the classifier without being republished.
+PDF. Anything is **not committed** if its terms forbid sharing, if its origin
+can't be established, or if it's a known free download that simply carries no
+licence — because free to download is not the same as licensed to republish.
+Held files go to a gitignored `data_local/` instead, where they still train the
+classifier without being republished.
 
 If you contribute pattern data, run `--check` on it first.
 
@@ -131,7 +133,7 @@ the author actually holds.
 ## Status
 
 Working: geometry import, encoding, grading, SVG/PDF/JSON output, the PDF
-extractor and licence triage, SVG import, 455 passing tests.
+extractor and licence triage, SVG import, 457 passing tests.
 
 Not yet proven: the vision layer has been built and unit-tested but not
 validated against a real corpus of photographed patterns — that needs training
