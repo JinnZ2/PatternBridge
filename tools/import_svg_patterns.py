@@ -68,9 +68,6 @@ _NUMBER = re.compile(r"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?")
 _COMMAND = re.compile(r"([MmLlHhVvCcSsQqTtAaZz])")
 _LENGTH = re.compile(r"^\s*([-+]?[\d.eE+-]+)\s*([a-zA-Z%]*)\s*$")
 
-# Group names that describe a layer rather than a piece. Renderers — including
-# this project's own SVGWriter — wrap the outline in <g id="boundary"> inside
-# <g id="piece_0_FRONT">, so the innermost label is the least informative one.
 # Elements whose children define things rather than draw them. A clipPath
 # rectangle or a glyph outline in <defs> is a perfectly good closed path, and
 # treating it as a pattern piece produces confident nonsense — a PDF-derived
@@ -80,6 +77,9 @@ NON_RENDERED_TAGS = {
     "lineargradient", "radialgradient", "filter", "metadata",
 }
 
+# Group names that describe a layer rather than a piece. Renderers — including
+# this project's own SVGWriter — wrap the outline in <g id="boundary"> inside
+# <g id="piece_0_FRONT">, so the innermost label is the least informative one.
 GENERIC_LABELS = {
     "boundary", "outline", "cutline", "cutting-line", "seam", "seam-line",
     "seamline", "grain", "grain-line", "grainline", "fold", "fold-line",

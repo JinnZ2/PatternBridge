@@ -56,27 +56,34 @@ The importer is built against FreeSewing's **actual** output, read from
 | `embed: true`, which drops `width`/`height` | still read as mm, not CSS pixels |
 | helper lines drawn as open paths | skipped — only closed outlines become pieces |
 
-**Validated against a real export.** An Aaron v4.10.1 PDF was converted page
-by page to SVG and read back. FreeSewing prints a calibration box and states
-its true size on the sheet, which makes it ground truth for path parsing,
-transform composition and unit scaling at once:
+**Validated against a real export.** An Aaron v4.10.1 was exported both tiled
+and untiled, converted to SVG and read back. The untiled sheet puts the whole
+pattern on one page with no clipping, so every piece comes out at its real
+size. FreeSewing prints a calibration box and states its true size on the
+sheet, which makes it self-declared ground truth for path parsing, transform
+composition and unit scaling at once:
 
 | Shape | FreeSewing says | Importer read |
 |---|---|---|
-| calibration box, outer | 4in x 2in | **4.0000 x 2.0000 in** |
-| calibration box, inner | 10cm x 5cm | **3.9370 x 1.9690 in** |
-| neck / arm binding width | 60 mm | **2.362 in** (60.0 mm) |
+| calibration box, outer | 4in x 2in | **101.6 x 50.8 mm** (4.000 x 2.000 in) |
+| calibration box, inner | 10cm x 5cm | **100.0 x 50.0 mm** |
+| neck binding width | 60 mm | **60.0 mm** |
+| arm binding width | 60 mm | **60.0 mm** |
+| front / back | — | 225.7 x 485.5 mm, correct for the stated 830 mm chest |
+
+All four Aaron pieces came back, at true size, from a single command.
 
 Two things that only a real file exposed, both now fixed and pinned by tests:
 a PDF-derived SVG hides a page-sized rectangle in `<clipPath>` and every glyph
 outline in `<defs>`, and the importer was reading those as pattern pieces; and
 FreeSewing writes `V`/`H` shorthand with no separator before the digits.
 
-Still untested: FreeSewing's **own** `.svg` export, as opposed to its PDF. The
-group-naming table above is verified from their source and covered by a
-fixture, but the real thing has not been through it. If a name comes back
-generic, add that id to `GENERIC_LABELS`; if scale is out, pass
-`units_per_inch_override`.
+Two caveats worth keeping in view. FreeSewing's **own** `.svg` export has
+still not been through the importer — only its PDF, converted — so the
+group-naming table above remains verified from source and fixture rather than
+from the real file. And the sheet's logo is a closed path of respectable size,
+so it imports as a piece; raise `--min-area` if that matters, since nothing in
+the geometry distinguishes a logo from a small pattern piece.
 
 ## 2. Free PDF downloads — usually personal-use
 

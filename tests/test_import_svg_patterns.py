@@ -485,6 +485,74 @@ class TestRealFreeSewingGeometry(TestCase):
                                101.6 * 50.8, places=3)
 
 
+class TestRealAaronSheet(TestCase):
+    """
+    Path data lifted verbatim from an untiled FreeSewing Aaron v4.10.1 sheet.
+
+    The untiled export puts the whole pattern on one page with no clipping, so
+    these are the real pieces at their real size. FreeSewing's user units are
+    millimetres and PyMuPDF writes PDF points unitless, hence the 2.834646
+    (72/25.4) scale in each transform and the 72-per-inch override.
+    """
+
+    FRONT_D = ("M0 90V495H225.72C225.72 323.2 213.74 196.41 213.74 196.41 "
+               "136.33 196.41 92.52 108.71 126.11 21.02L96.19 9.55C65.37 90 "
+               "65.37 90 0 90Z")
+    BINDING_D = "M0 0V466.95H60V0H0Z"
+    CAL_INNER_D = "M62.86 235V285H162.86V235H62.86Z"
+    SCALE = "matrix(2.834646,0,0,2.834646,0,0)"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _measure(self, d: str):
+        body = f'<g transform="{self.SCALE}"><path id="p" d="{d}"/></g>'
+        path = self.root / "aaron.svg"
+        path.write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="1665.1842" '
+            'height="1387.4054" viewBox="0 0 1665.1842 1387.4054">'
+            f"{body}</svg>"
+        )
+        piece = svg_to_pieces(path, min_area=0.05, units_per_inch_override=72.0)[0]
+        xs = [q[0] for q in piece.boundary_points]
+        ys = [q[1] for q in piece.boundary_points]
+        return max(xs) - min(xs), max(ys) - min(ys)
+
+    def test_front_piece_is_its_real_size(self):
+        width, height = self._measure(self.FRONT_D)
+        # 225.72mm x 485.45mm, an A-shirt front cut on the fold.
+        self.assertAlmostEqual(width * 25.4, 225.72, places=2)
+        self.assertAlmostEqual(height * 25.4, 485.45, places=2)
+
+    def test_front_piece_curve_is_followed(self):
+        # The cubic in the armhole must contribute samples, not a straight
+        # chord: a 7-command path would otherwise yield a handful of points.
+        body = f'<g transform="{self.SCALE}"><path id="p" d="{self.FRONT_D}"/></g>'
+        path = self.root / "aaron.svg"
+        path.write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="1665.1842" '
+            f'height="1387.4054" viewBox="0 0 1665.1842 1387.4054">{body}</svg>'
+        )
+        piece = svg_to_pieces(path, min_area=0.05, units_per_inch_override=72.0)[0]
+        self.assertGreater(len(piece.boundary_points), 20)
+
+    def test_binding_is_exactly_sixty_millimetres_wide(self):
+        width, height = self._measure(self.BINDING_D)
+        self.assertAlmostEqual(width * 25.4, 60.0, places=3)
+        self.assertAlmostEqual(height * 25.4, 466.95, places=2)
+
+    def test_inner_calibration_box_is_exactly_ten_by_five_centimetres(self):
+        # FreeSewing prints "the (white) inside of this box should measure
+        # 10cm x 5cm" on the sheet, which makes it self-declared ground truth.
+        width, height = self._measure(self.CAL_INNER_D)
+        self.assertAlmostEqual(width * 25.4, 100.0, places=3)
+        self.assertAlmostEqual(height * 25.4, 50.0, places=3)
+
+
 class TestImplicitClosure(TestCase):
     """Outlines that return to their start without writing Z."""
 
