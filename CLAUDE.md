@@ -77,12 +77,20 @@ PatternBridge/
 │   ├── test_capture_server.py      # Mobile capture server tests
 │   ├── test_preprocessor.py        # Image preprocessor tests
 │   ├── test_fetch_patterns.py      # Open-source pattern fetcher tests
-│   └── test_extract_pdf_patterns.py # Pattern PDF piece extractor tests
+│   ├── test_extract_pdf_patterns.py # Pattern PDF piece extractor tests
+│   └── test_import_garment_patterns.py # Garment-Pattern-Generator importer tests
+│
+├── data/                           # Pattern piece images for classifier training
+│   └── PROVENANCE.md               # Per-pattern licensing and the policy applied
 │
 ├── data_geometry/                  # 124 MIT-licensed pieces imported as exact geometry
 │
 ├── docs/
-│   └── PATTERN_SOURCES.md          # Where to find patterns, and their licensing
+│   ├── PATTERN_SOURCES.md          # Where to find patterns, and their licensing
+│   └── img/                        # README artwork, rendered from open geometry
+│
+├── .github/
+│   └── workflows/tests.yml         # CI: install, tests on 3.10/3.12, run every example
 │
 ├── tools/
 │   ├── __init__.py
@@ -327,13 +335,14 @@ Geometric tokens use the Geometric-to-Binary framework:
 
 ### Priority next steps
 1. ~~Replace Geometric-to-Binary stub classes with real implementations~~ — **Done**
-2. Test vision layer against real pattern images
+2. Test vision layer against real pattern images — still the main gap; the layer is unit-tested but never validated against a photographed corpus
 3. ~~Add sample pattern data to `patterns/` directory~~ — **Done** (synthetic samples)
 4. ~~Create additional example scripts (sundress, socks, hat)~~ — **Done**
 5. ~~Add CNN classifier (`pattern_vision/classifier.py`)~~ — **Done** (needs training data + weights)
 6. ~~Add JSON/data export module~~ — **Done** (`pattern_output/data_export.py`)
 7. ~~Create `pattern_vision/dataset.py` and `train.py` for classifier training~~ — **Done** (dataset loader + multi-task training loop with CLI)
-8. Collect and curate real pattern images for training and testing
+8. Collect and curate real pattern images — **in progress**: 59 images in `data/` plus 124 geometry pieces in `data_geometry/`, all provenance-checked
+9. Import from FreeSewing (SVG in, no vision layer needed) — the natural next open-licensed source
 
 ---
 
