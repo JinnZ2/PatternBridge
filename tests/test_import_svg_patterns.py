@@ -396,6 +396,95 @@ class TestFreeSewingShape(TestCase):
         self.assertAlmostEqual(max(xs) - min(xs), 10.0, places=4)
 
 
+class TestNonRenderedElements(TestCase):
+    """<defs> and friends define things; they are not drawn."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_clip_path_rectangle_is_not_a_piece(self):
+        # A PDF-derived SVG hides a page-sized clip rect in <defs>; taking it
+        # for a pattern piece produces a confident, completely wrong answer.
+        body = ('<defs><clipPath id="clip_1">'
+                '<path d="M 0,0 H 4000 V 4000 H 0 Z"/></clipPath></defs>' + SQUARE)
+        pieces = svg_to_pieces(_write(self.root, body))
+        self.assertEqual(len(pieces), 1)
+        xs = [p[0] for p in pieces[0].boundary_points]
+        self.assertAlmostEqual(max(xs) - min(xs), 10.0, places=6)
+
+    def test_glyph_outlines_in_defs_are_not_pieces(self):
+        body = ('<defs><path id="font_2_36" d="M 0,0 H 900 V 900 H 0 Z"/></defs>'
+                + SQUARE)
+        self.assertEqual(len(svg_to_pieces(_write(self.root, body))), 1)
+
+    def test_mask_symbol_and_marker_are_skipped(self):
+        big = '<path d="M 0,0 H 4000 V 4000 H 0 Z"/>'
+        for tag in ("mask", "symbol", "marker", "pattern"):
+            body = f"<{tag} id=\"x\">{big}</{tag}>" + SQUARE
+            with self.subTest(tag=tag):
+                self.assertEqual(len(svg_to_pieces(_write(self.root, body))), 1)
+
+
+class TestRealFreeSewingGeometry(TestCase):
+    """
+    Path data lifted from an actual FreeSewing Aaron v4.10.1 export.
+
+    The pattern prints a calibration box and states its true size on the sheet
+    — "the (black) outside of this box should measure 4in x 2in" — which makes
+    it ground truth for the whole chain: path parsing, transform composition
+    and unit scaling together.
+    """
+
+    # Verbatim from the export. 163.66 - 62.06 = 101.6 units wide, and
+    # 101.6mm is 4 inches, so FreeSewing's user units are millimetres; the
+    # 2.834646 scale in the transform is 72/25.4, points per millimetre.
+    BOX_D = "M62.06 234.6V285.4H163.66V234.6H62.06Z"
+    BOX_TRANSFORM = "matrix(2.834646,0,0,2.834646,685.1906,6.932923)"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _box(self) -> Path:
+        # PyMuPDF writes PDF points as unitless numbers, so 72 per inch.
+        body = f'<g transform="{self.BOX_TRANSFORM}"><path id="cal" d="{self.BOX_D}"/></g>'
+        path = self.root / "cal.svg"
+        path.write_text(
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="612" height="792" '
+            f'viewBox="0 0 612 792">{body}</svg>'
+        )
+        return path
+
+    def test_calibration_box_measures_exactly_four_by_two_inches(self):
+        piece = svg_to_pieces(self._box(), min_area=0.05,
+                              units_per_inch_override=72.0)[0]
+        xs = [p[0] for p in piece.boundary_points]
+        ys = [p[1] for p in piece.boundary_points]
+        self.assertAlmostEqual(max(xs) - min(xs), 4.0, places=4)
+        self.assertAlmostEqual(max(ys) - min(ys), 2.0, places=4)
+
+    def test_freesewing_user_units_are_millimetres(self):
+        # The same box read as raw user units must be 101.6 x 50.8 mm.
+        subs = parse_path(self.BOX_D)
+        xs = [p[0] for p in subs[0]["points"]]
+        ys = [p[1] for p in subs[0]["points"]]
+        self.assertAlmostEqual(max(xs) - min(xs), 101.6, places=4)
+        self.assertAlmostEqual(max(ys) - min(ys), 50.8, places=4)
+
+    def test_vertical_and_horizontal_shorthand_in_real_data(self):
+        # The export uses V/H shorthand with no separators before the digits.
+        self.assertTrue(parse_path(self.BOX_D)[0]["closed"])
+        self.assertAlmostEqual(polygon_area(parse_path(self.BOX_D)[0]["points"]),
+                               101.6 * 50.8, places=3)
+
+
 class TestImplicitClosure(TestCase):
     """Outlines that return to their start without writing Z."""
 
