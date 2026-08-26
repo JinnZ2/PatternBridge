@@ -106,6 +106,21 @@ def parse_length(text: str | None) -> tuple[float, str] | None:
     return value, match.group(2).lower()
 
 
+def looks_like_freesewing(root: ET.Element) -> bool:
+    """
+    Recognise FreeSewing output by its group ids.
+
+    FreeSewing names groups "<prefix>stack-<id>[-part-<name>]", and its user
+    units are millimetres (packages/core/src/svg.mjs writes width in mm and a
+    viewBox with the same numbers).
+    """
+    for element in root.iter():
+        identifier = element.get("id") or ""
+        if _PART_ID.match(identifier) or _STACK_ID.match(identifier):
+            return True
+    return False
+
+
 def units_per_inch(root: ET.Element, override: float | None = None) -> float:
     """
     Work out how many SVG user units make one inch.
@@ -130,6 +145,12 @@ def units_per_inch(root: ET.Element, override: float | None = None) -> float:
                 if len(numbers) == 4 and numbers[2] > 0:
                     return numbers[2] / inches
             return value / inches
+
+    # No physical width. FreeSewing drops width/height when a pattern is
+    # embedded, leaving a viewBox whose units are millimetres — assuming CSS
+    # pixels there would shrink the pattern by a factor of 3.8.
+    if view_box and looks_like_freesewing(root):
+        return 1.0 / UNIT_TO_INCH["mm"]
 
     return 96.0
 
@@ -448,9 +469,32 @@ def polygon_area(points: list[Point]) -> float:
     return abs(total) / 2.0
 
 
+# FreeSewing names its groups "<prefix>stack-<stackId>-part-<partName>", with
+# the prefix configurable and defaulting to "fs-" (packages/core/src/svg.mjs,
+# __renderPart). Taking everything after the last "-part-" recovers the part
+# name whatever the prefix or stack happens to be, and the "stack-" form is the
+# fallback for a group that never got down to a part.
+_PART_ID = re.compile(r".*-part-(?P<name>.+)$", re.I)
+_STACK_ID = re.compile(r".*stack-(?P<name>.+)$", re.I)
+
+
+def _endpoints_meet(points: list[Point], tolerance: float = 1e-6) -> bool:
+    """True if a subpath ends where it began, so it encloses an area."""
+    (x0, y0), (x1, y1) = points[0], points[-1]
+    span = max(
+        max(p[0] for p in points) - min(p[0] for p in points),
+        max(p[1] for p in points) - min(p[1] for p in points),
+    )
+    return math.hypot(x1 - x0, y1 - y0) <= max(tolerance, span * 1e-3)
+
+
 def _clean(name: str) -> str:
     """Turn an SVG id or class into a piece name."""
-    name = re.sub(r"^piece[_-]?\d*[_-]?", "", name.strip())
+    name = name.strip()
+    match = _PART_ID.match(name) or _STACK_ID.match(name)
+    if match:
+        name = match.group("name")
+    name = re.sub(r"^piece[_-]?\d*[_-]?", "", name)
     name = re.sub(r"[_-]+", " ", name)
     return name.strip().upper() or "PIECE"
 
@@ -469,14 +513,17 @@ def _walk(element: ET.Element, matrix: tuple, label: str, out: list) -> None:
     if tag == "g" and own_label:
         label = own_label
 
+    # An enclosing group names the piece; a leaf shape's own id is usually
+    # machine-generated (FreeSewing numbers every path "fs-1", "fs-2", ...),
+    # so it is only a fallback for a shape sitting outside any named group.
     if tag == "path":
-        out.append((element.get("d") or "", matrix, own_label or label))
+        out.append((element.get("d") or "", matrix, label or own_label))
     elif tag in ("polygon", "polyline"):
         numbers = [float(n) for n in _NUMBER.findall(element.get("points") or "")]
         pairs = list(zip(numbers[0::2], numbers[1::2]))
         if pairs:
             d = "M " + " L ".join(f"{x},{y}" for x, y in pairs)
-            out.append((d + (" Z" if tag == "polygon" else ""), matrix, own_label or label))
+            out.append((d + (" Z" if tag == "polygon" else ""), matrix, label or own_label))
     elif tag == "rect":
         try:
             x = float(element.get("x", 0)); y = float(element.get("y", 0))
@@ -484,7 +531,7 @@ def _walk(element: ET.Element, matrix: tuple, label: str, out: list) -> None:
         except ValueError:
             w = h = 0.0
         if w > 0 and h > 0:
-            out.append((f"M {x},{y} H {x+w} V {y+h} H {x} Z", matrix, own_label or label))
+            out.append((f"M {x},{y} H {x+w} V {y+h} H {x} Z", matrix, label or own_label))
 
     for child in element:
         _walk(child, matrix, label, out)
@@ -521,7 +568,12 @@ def svg_to_pieces(
     candidates: list[tuple[float, str, list[Point]]] = []
     for d, matrix, label in collected:
         for sub in parse_path(d, samples=samples):
-            if not sub["closed"] or len(sub["points"]) < 3:
+            if len(sub["points"]) < 3:
+                continue
+            # An outline that returns to its start is closed whether or not the
+            # author wrote Z. Real files often omit it, and skipping those
+            # would silently drop the only path that mattered.
+            if not sub["closed"] and not _endpoints_meet(sub["points"]):
                 continue
             points = [apply_matrix(matrix, p) for p in sub["points"]]
             inches = [(x / scale, y / scale) for x, y in points]

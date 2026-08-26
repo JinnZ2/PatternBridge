@@ -20,6 +20,7 @@ from tools.import_svg_patterns import (
     parse_path,
     parse_transform,
     polygon_area,
+    looks_like_freesewing,
     svg_to_pieces,
     units_per_inch,
 )
@@ -312,6 +313,106 @@ class TestRoundTrip(TestCase):
     def test_name_survives_the_trip(self):
         _, back = self._round_trip([(0, 0), (12, 0), (12, 20), (0, 20)])
         self.assertEqual(back.name, "FRONT")
+
+
+# Built to the structure FreeSewing's own renderer emits, read from
+# packages/core/src/svg.mjs: width/height in mm, a viewBox carrying the same
+# numbers (so one user unit is one millimetre), and nested groups named
+# "<prefix>stack-<stackId>[-part-<partName>]".
+FREESEWING_SVG = """<svg xmlns="http://www.w3.org/2000/svg"
+  width="254mm" height="254mm" viewBox="0 0 254 254">
+  <!-- Start of group #fs-stack-front -->
+  <g id="fs-stack-front">
+    <g id="fs-stack-front-part-front">
+      <path id="fs-1" d="M 0,0 L 254,0 L 254,254 L 0,254 z"/>
+      <path id="fs-2" d="M 20,20 L 40,20"/>
+    </g>
+  </g>
+</svg>"""
+
+# Same pattern with embed on: FreeSewing omits width and height entirely.
+FREESEWING_EMBEDDED = """<svg xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 254 254">
+  <g id="fs-stack-front"><g id="fs-stack-front-part-back">
+    <path id="fs-1" d="M 0,0 L 254,0 L 254,254 L 0,254 z"/>
+  </g></g>
+</svg>"""
+
+
+class TestFreeSewingShape(TestCase):
+    """Against a fixture matching FreeSewing's documented output."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _write(self, markup: str) -> Path:
+        path = self.root / "fs.svg"
+        path.write_text(markup)
+        return path
+
+    def test_millimetre_viewbox_gives_true_size(self):
+        # 254mm square == 10 inches.
+        piece = svg_to_pieces(self._write(FREESEWING_SVG))[0]
+        xs = [p[0] for p in piece.boundary_points]
+        self.assertAlmostEqual(max(xs) - min(xs), 10.0, places=4)
+
+    def test_part_name_is_recovered_from_the_group_id(self):
+        # Not "FS STACK FRONT PART FRONT".
+        self.assertEqual(svg_to_pieces(self._write(FREESEWING_SVG))[0].name, "FRONT")
+
+    def test_stack_id_used_when_there_is_no_part_group(self):
+        markup = FREESEWING_SVG.replace('<g id="fs-stack-front-part-front">', "<g>")
+        self.assertEqual(svg_to_pieces(self._write(markup))[0].name, "FRONT")
+
+    def test_custom_id_prefix_still_resolves(self):
+        markup = FREESEWING_SVG.replace("fs-", "mypattern-")
+        self.assertEqual(svg_to_pieces(self._write(markup))[0].name, "FRONT")
+
+    def test_helper_lines_are_not_pieces(self):
+        # The open fs-2 path is a marking, not an outline.
+        self.assertEqual(len(svg_to_pieces(self._write(FREESEWING_SVG))), 1)
+
+    def test_embedded_pattern_is_still_millimetres(self):
+        # No width/height: assuming CSS pixels would shrink this 3.8x.
+        piece = svg_to_pieces(self._write(FREESEWING_EMBEDDED))[0]
+        xs = [p[0] for p in piece.boundary_points]
+        self.assertAlmostEqual(max(xs) - min(xs), 10.0, places=4)
+        self.assertEqual(piece.name, "BACK")
+
+    def test_freesewing_is_detected(self):
+        self.assertTrue(looks_like_freesewing(ET.fromstring(FREESEWING_SVG)))
+
+    def test_ordinary_svg_is_not_mistaken_for_freesewing(self):
+        self.assertFalse(looks_like_freesewing(ET.fromstring(_svg(SQUARE))))
+
+    def test_plain_viewbox_svg_still_defaults_to_pixels(self):
+        markup = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 960">' + SQUARE + "</svg>"
+        piece = svg_to_pieces(self._write(markup))[0]
+        xs = [p[0] for p in piece.boundary_points]
+        self.assertAlmostEqual(max(xs) - min(xs), 10.0, places=4)
+
+
+class TestImplicitClosure(TestCase):
+    """Outlines that return to their start without writing Z."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_path_returning_to_start_counts_as_closed(self):
+        body = '<path id="front" d="M 0,0 L 960,0 L 960,960 L 0,960 L 0,0"/>'
+        self.assertEqual(len(svg_to_pieces(_write(self.root, body))), 1)
+
+    def test_genuinely_open_path_is_still_skipped(self):
+        body = '<path id="grain" d="M 0,0 L 960,0 L 960,960"/>'
+        self.assertEqual(svg_to_pieces(_write(self.root, body)), [])
 
 
 class TestImportAndCLI(TestCase):

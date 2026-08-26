@@ -44,14 +44,25 @@ FreeSewing is the strongest fit for PatternBridge specifically. It emits
 python -m tools.import_svg_patterns aaron.svg --list
 ```
 
-**Not yet verified against a real FreeSewing export.** The importer is
-round-trip tested against this project's own SVG output and against fixtures
-covering the whole path grammar, but no actual FreeSewing file has been through
-it — the environment it was written in cannot reach freesewing.org. When you
-run the first one, check two things: that the reported piece dimensions match
-the size FreeSewing states, and that piece names come from the group ids you
-expect. If the scale is out, pass `units_per_inch_override`; if names come back
-generic, add the offending id to `GENERIC_LABELS`.
+The importer is built against FreeSewing's **actual** output, read from
+`packages/core/src/svg.mjs` in their source rather than guessed:
+
+| What FreeSewing emits | How the importer reads it |
+|---|---|
+| `width`/`height` in mm with a matching `viewBox` | one user unit = 1 mm, so sizes land in true inches |
+| groups named `fs-stack-<id>-part-<name>` | piece name taken from after the last `-part-` |
+| a configurable `idPrefix` (default `fs-`) | prefix-agnostic — any prefix resolves |
+| every path auto-numbered `fs-1`, `fs-2`, … | ignored; the enclosing group names the piece |
+| `embed: true`, which drops `width`/`height` | still read as mm, not CSS pixels |
+| helper lines drawn as open paths | skipped — only closed outlines become pieces |
+
+**Still not run against a real exported file.** The structure above is verified
+from source and covered by a fixture built to match it, but no actual
+FreeSewing SVG has been through the importer — this environment cannot reach
+freesewing.org or codeberg.org. When you run the first one, check that the
+reported dimensions match the size FreeSewing states, and that piece names look
+right. If the scale is out, pass `units_per_inch_override`; if a name comes
+back generic, add that id to `GENERIC_LABELS`.
 
 ## 2. Free PDF downloads — usually personal-use
 

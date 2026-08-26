@@ -34,7 +34,7 @@ muscle, is a parameter rather than an afternoon with a ruler.
 ```bash
 git clone https://github.com/JinnZ2/PatternBridge && cd PatternBridge
 pip install -e ".[dev]"
-pytest tests/ -q          # 428 tests
+pytest tests/ -q          # 439 tests
 python examples/quick_start.py
 ```
 
@@ -129,7 +129,7 @@ the author actually holds.
 ## Status
 
 Working: geometry import, encoding, grading, SVG/PDF/JSON output, the PDF
-extractor and licence triage, SVG import, 428 passing tests.
+extractor and licence triage, SVG import, 439 passing tests.
 
 Not yet proven: the vision layer has been built and unit-tested but not
 validated against a real corpus of photographed patterns — that needs training
