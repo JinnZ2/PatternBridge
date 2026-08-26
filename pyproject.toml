@@ -1,13 +1,13 @@
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "patternbridge"
 version = "0.1.0"
 description = "Parametric sewing pattern generation from images"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
     "anthropic>=0.30.0",
@@ -36,6 +36,7 @@ include = [
     "pattern_output*",
     "bridge*",
     "patterns*",
+    "tools*",
 ]
 
 [tool.pytest.ini_options]
