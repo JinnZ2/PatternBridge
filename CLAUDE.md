@@ -64,7 +64,7 @@ PatternBridge/
 ├── patterns/
 │   └── __init__.py                 # Synthetic sample data (8 garment pieces)
 │
-├── tests/                          # Unit tests (453 tests, all passing)
+├── tests/                          # Unit tests (455 tests, all passing)
 │   ├── __init__.py
 │   ├── conftest.py                 # Shared fixtures (pieces, vision results)
 │   ├── test_vision.py              # Rubric, scoring, prompt evaluator
@@ -143,7 +143,7 @@ PatternBridge/
 - **tools/fetch_patterns.py** — Downloads open-source pattern images from curated sources (Freesewing MIT, Wikimedia CC, GitHub CC). Auto-classifies garment type/piece from URL keywords. Saves with provenance sidecar JSON (source URL, license, attribution). Supports custom URL fetching, dry-run mode, and pluggable source registry.
 - **tools/extract_pdf_patterns.py** — Crops labeled pattern piece images out of sewing pattern PDFs into `data/<garment_type>/<piece_name>/`. Handles single-page pieces (fractional crop + ink auto-trim) and tiled full-size patterns (joins the page grid into one sheet, then crops pieces from it); `TileLayout.content_box` trims each page so patterns that overlap rather than butt-join still line up. Saved images are capped at 2400 px on the longest side. Ships a registry of source PDFs with license metadata and content hashes; entries whose PDF forbids redistribution are flagged `redistributable=False` and skipped unless `--include-restricted` is passed. `--check <path>` triages any PDF or folder for restriction language before extraction, reporting PERSONALISED (buyer watermark) / NO TERMS / DO NOT USE / CHECK BY EYE (scanned, no text layer) / ALREADY HAVE (hash match), plus a "says of itself" line (publisher, URL, pattern number) to help identify a file whose origin has been forgotten. See `data/PROVENANCE.md` for the policy and `docs/PATTERN_SOURCES.md` for sources.
 - **tools/import_garment_patterns.py** — Imports exact pattern geometry from [Garment-Pattern-Generator](https://github.com/maria-korosteleva/Garment-Pattern-Generator) templates (MIT). Each template panel is a vertex list plus an edge loop with quadratic Bézier curvature; the importer resolves control points using the generator's own relative convention, samples curves, converts cm→inches, and flips the y-axis from the generator's y-up frame to this project's y-down one. Produces `PatternPiece` objects that feed encoding/scaling/output directly — no vision layer. 23 templates → 124 pieces in `data_geometry/`. Run with `python -m tools.import_garment_patterns --src <checkout> --out data_geometry`.
-- **tools/import_svg_patterns.py** — Imports pattern geometry from any SVG: FreeSewing exports, Inkscape/Illustrator tracings, digitiser output, or files this project wrote. Full path grammar (M/L/H/V/C/S/Q/T/A/Z, absolute and relative), nested transforms (matrix/translate/scale/rotate/skew), `rect`/`polygon`/`polyline`, and real-world scale read from `width`/`height` + `viewBox` so a millimetre document and a 96 px/inch one both land correctly in inches. Closed paths below `--min-area` are treated as marks rather than pieces; generic layer ids (`boundary`, `seam-line`, ...) fall through to the enclosing piece group for naming. FreeSewing specifics are handled from their real output format (`packages/core/src/svg.mjs`): mm viewBox units, `fs-stack-<id>-part-<name>` group naming with a configurable prefix, auto-numbered path ids ignored in favour of the group, and `embed` mode (no width/height) still read as mm. Skips `<defs>`, `<clipPath>`, `<mask>` and other non-rendered subtrees, whose closed paths would otherwise import as pieces. Verified by round-tripping SVGWriter output, by a fixture matching FreeSewing's emitted structure, and against real Aaron v4.10.1 exports, tiled and untiled, whose printed calibration box reads back at exactly 100.0 x 50.0 mm and whose bindings read at exactly 60.0 mm. Run with `python -m tools.import_svg_patterns pattern.svg --list`.
+- **tools/import_svg_patterns.py** — Imports pattern geometry from any SVG: FreeSewing exports, Inkscape/Illustrator tracings, digitiser output, or files this project wrote. Full path grammar (M/L/H/V/C/S/Q/T/A/Z, absolute and relative), nested transforms (matrix/translate/scale/rotate/skew), `rect`/`polygon`/`polyline`, and real-world scale read from `width`/`height` + `viewBox` so a millimetre document and a 96 px/inch one both land correctly in inches. Closed paths below `--min-area` are treated as marks rather than pieces; generic layer ids (`boundary`, `seam-line`, ...) fall through to the enclosing piece group for naming. FreeSewing specifics are handled from their real output format (`packages/core/src/svg.mjs`): mm viewBox units, `fs-stack-<id>-part-<design>.<name>` group naming with a configurable prefix (the design namespace is dropped, so a piece is `BACK`, not `AARON.BACK`), auto-numbered path ids ignored in favour of the group, and `embed` mode (no width/height) still read as mm. Skips `<defs>`, `<clipPath>`, `<mask>` and other non-rendered subtrees, whose closed paths would otherwise import as pieces. Verified by round-tripping SVGWriter output, by a fixture matching FreeSewing's emitted structure, against real Aaron v4.10.1 PDF exports (tiled and untiled), and against FreeSewing's **native SVG** — `@freesewing/aaron@4.10.1` installed from npm and drafted through `@freesewing/core`, whose printed calibration box reads back at exactly 101.60 x 50.80 mm (4 x 2 in) and 100.00 x 50.00 mm (10 x 5 cm) and whose bindings read at exactly 60.00 mm, identically with `embed` on and off. Known quirk: the calibration box is two closed rectangles inside a part's group, so it imports as two extra pieces named after that part. Run with `python -m tools.import_svg_patterns pattern.svg --list`.
 - **examples/sundress.py** — Full pipeline: sample data → boundary → encode → scale → SVG + PDF + JSON.
 - **examples/socks.py** — Single-piece pipeline with symmetry detection.
 - **examples/hat.py** — Multi-cut piece with token introspection.
@@ -260,7 +260,7 @@ Requires **Python 3.10+** (uses `X | Y` union syntax and `from __future__ import
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all tests (453 tests)
+# Run all tests (455 tests)
 pytest tests/ -v
 
 # Run by layer
@@ -345,8 +345,8 @@ Geometric tokens use the Geometric-to-Binary framework:
 6. ~~Add JSON/data export module~~ — **Done** (`pattern_output/data_export.py`)
 7. ~~Create `pattern_vision/dataset.py` and `train.py` for classifier training~~ — **Done** (dataset loader + multi-task training loop with CLI)
 8. Collect and curate real pattern images — **in progress**: 59 images in `data/` plus 124 geometry pieces in `data_geometry/`, all provenance-checked
-9. ~~Import from FreeSewing (SVG in, no vision layer needed)~~ — **Done** via the general SVG importer; not yet run against a real FreeSewing export (see below)
-10. Run `import_svg_patterns` on FreeSewing's own `.svg` export — the PDF export is validated (calibration box reads back exact), but their SVG file itself has not been through it
+9. ~~Import from FreeSewing (SVG in, no vision layer needed)~~ — **Done** via the general SVG importer
+10. ~~Run `import_svg_patterns` on FreeSewing's own `.svg` export~~ — **Done**: `@freesewing/aaron@4.10.1` drafted from npm through `@freesewing/core` and imported natively; calibration box and bindings read back exact. Exposed and fixed the design-namespaced part naming (`aaron.back` → `BACK`)
 
 ---
 

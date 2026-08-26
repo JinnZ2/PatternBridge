@@ -315,15 +315,17 @@ class TestRoundTrip(TestCase):
         self.assertEqual(back.name, "FRONT")
 
 
-# Built to the structure FreeSewing's own renderer emits, read from
-# packages/core/src/svg.mjs: width/height in mm, a viewBox carrying the same
-# numbers (so one user unit is one millimetre), and nested groups named
-# "<prefix>stack-<stackId>[-part-<partName>]".
+# Built to the structure FreeSewing's own renderer emits, and since checked
+# against a real one: @freesewing/aaron@4.10.1 was installed from npm and
+# drafted through @freesewing/core, and these are the ids and units it wrote.
+# width/height in mm, a viewBox carrying the same numbers (so one user unit is
+# one millimetre), and nested groups named
+# "<prefix>stack-<stackId>[-part-<designName>.<partName>]".
 FREESEWING_SVG = """<svg xmlns="http://www.w3.org/2000/svg"
   width="254mm" height="254mm" viewBox="0 0 254 254">
-  <!-- Start of group #fs-stack-front -->
-  <g id="fs-stack-front">
-    <g id="fs-stack-front-part-front">
+  <!-- Start of group #fs-stack-aaron.front -->
+  <g id="fs-stack-aaron.front">
+    <g id="fs-stack-aaron.front-part-aaron.front">
       <path id="fs-1" d="M 0,0 L 254,0 L 254,254 L 0,254 z"/>
       <path id="fs-2" d="M 20,20 L 40,20"/>
     </g>
@@ -333,7 +335,7 @@ FREESEWING_SVG = """<svg xmlns="http://www.w3.org/2000/svg"
 # Same pattern with embed on: FreeSewing omits width and height entirely.
 FREESEWING_EMBEDDED = """<svg xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 254 254">
-  <g id="fs-stack-front"><g id="fs-stack-front-part-back">
+  <g id="fs-stack-aaron.back"><g id="fs-stack-aaron.back-part-aaron.back">
     <path id="fs-1" d="M 0,0 L 254,0 L 254,254 L 0,254 z"/>
   </g></g>
 </svg>"""
@@ -361,8 +363,18 @@ class TestFreeSewingShape(TestCase):
         self.assertAlmostEqual(max(xs) - min(xs), 10.0, places=4)
 
     def test_part_name_is_recovered_from_the_group_id(self):
-        # Not "FS STACK FRONT PART FRONT".
+        # Not "FS STACK AARON.FRONT PART AARON.FRONT".
         self.assertEqual(svg_to_pieces(self._write(FREESEWING_SVG))[0].name, "FRONT")
+
+    def test_design_namespace_is_dropped_from_the_part_name(self):
+        # Real FreeSewing ids namespace every part by its design, so the raw
+        # part name is "aaron.front". The design is already known from the
+        # file; carrying it into every piece name only repeats it.
+        self.assertNotIn("AARON", svg_to_pieces(self._write(FREESEWING_SVG))[0].name)
+
+    def test_part_name_without_a_namespace_is_left_alone(self):
+        markup = FREESEWING_SVG.replace("aaron.front", "front")
+        self.assertEqual(svg_to_pieces(self._write(markup))[0].name, "FRONT")
 
     def test_stack_id_used_when_there_is_no_part_group(self):
         markup = FREESEWING_SVG.replace('<g id="fs-stack-front-part-front">', "<g>")

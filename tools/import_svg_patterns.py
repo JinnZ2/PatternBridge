@@ -503,6 +503,10 @@ def _clean(name: str) -> str:
     match = _PART_ID.match(name) or _STACK_ID.match(name)
     if match:
         name = match.group("name")
+        # FreeSewing namespaces every part by its design, so a real export
+        # yields "aaron.back", not "back". The design is already known from
+        # the file; only the part name is worth carrying into the piece.
+        name = name.rpartition(".")[2] or name
     name = re.sub(r"^piece[_-]?\d*[_-]?", "", name)
     name = re.sub(r"[_-]+", " ", name)
     return name.strip().upper() or "PIECE"

@@ -26,7 +26,7 @@ and machine-readable output rather than a flattened PDF.
 
 | Resource | What it is | License | Status |
 |---|---|---|---|
-| [FreeSewing](https://freesewing.org) | Web app + open-source codebase that drafts made-to-measure patterns from your measurements — menswear, womenswear, accessories, blocks/slopers | MIT (code); CC-BY (patterns/content) | as claimed |
+| [FreeSewing](https://freesewing.org) | Web app + open-source codebase that drafts made-to-measure patterns from your measurements — menswear, womenswear, accessories, blocks/slopers | MIT (code); CC-BY (patterns/content) | **tested — SVG import verified** |
 | [GitHub `sewing-patterns` topic](https://github.com/topics/sewing-patterns) | Pattern generators, PDF tilers, SVG linters, foundation-paper-piecing tools | Varies — mostly MIT / GPL / CC, check each repo | as claimed |
 | [Garment Pattern Generator](https://github.com/maria-korosteleva/Garment-Pattern-Generator) | Research tool generating 3D garment datasets with sewing patterns | MIT, © 2021 Maria Korosteleva | **tested — imported** |
 
@@ -50,7 +50,7 @@ The importer is built against FreeSewing's **actual** output, read from
 | What FreeSewing emits | How the importer reads it |
 |---|---|
 | `width`/`height` in mm with a matching `viewBox` | one user unit = 1 mm, so sizes land in true inches |
-| groups named `fs-stack-<id>-part-<name>` | piece name taken from after the last `-part-` |
+| groups named `fs-stack-<id>-part-<design>.<name>` | piece name taken from after the last `-part-`, design namespace dropped |
 | a configurable `idPrefix` (default `fs-`) | prefix-agnostic — any prefix resolves |
 | every path auto-numbered `fs-1`, `fs-2`, … | ignored; the enclosing group names the piece |
 | `embed: true`, which drops `width`/`height` | still read as mm, not CSS pixels |
@@ -78,12 +78,40 @@ a PDF-derived SVG hides a page-sized rectangle in `<clipPath>` and every glyph
 outline in `<defs>`, and the importer was reading those as pattern pieces; and
 FreeSewing writes `V`/`H` shorthand with no separator before the digits.
 
-Two caveats worth keeping in view. FreeSewing's **own** `.svg` export has
-still not been through the importer — only its PDF, converted — so the
-group-naming table above remains verified from source and fixture rather than
-from the real file. And the sheet's logo is a closed path of respectable size,
-so it imports as a piece; raise `--min-area` if that matters, since nothing in
-the geometry distinguishes a logo from a small pattern piece.
+**Validated against FreeSewing's own SVG, not just its PDF.** The table above
+was originally read from FreeSewing's source. It has since been checked against
+the renderer itself: `@freesewing/aaron@4.10.1` and `@freesewing/core` were
+installed from npm and drafted directly, so the file below is what FreeSewing
+writes, with no PDF round-trip in between:
+
+```bash
+python -m tools.import_svg_patterns aaron-native.svg --list
+```
+
+| Shape | True size | Importer read |
+|---|---|---|
+| calibration box, outer | 4in x 2in | **101.60 x 50.80 mm** |
+| calibration box, inner | 10cm x 5cm | **100.00 x 50.00 mm** |
+| neck binding width | 60 mm | **60.00 mm** |
+| arm binding width | 60 mm | **60.00 mm** |
+
+Rendering with `embed: true`, which drops `width` and `height` entirely, gives
+byte-for-byte the same measurements — so reading an embedded sheet as
+millimetres rather than CSS pixels is now confirmed against the real output
+rather than inferred from source.
+
+The real file exposed one thing the fixture could not. FreeSewing namespaces
+every part by its design, so the group is
+`fs-stack-aaron.back-part-aaron.back`, and pieces were coming out named
+`AARON.BACK` rather than `BACK`. The design is already known from the file, so
+the namespace is now dropped.
+
+Two caveats remain. The printed **calibration box** is two closed rectangles
+sitting inside a part's group, so it imports as two extra pieces named after
+that part — on the Aaron above, `BACK` at 4 x 2 in and `BACK` at 3.94 x 1.97
+in. The sheet **logo** behaves the same way on PDF-derived files. Nothing in
+the geometry distinguishes either from a small pattern piece; raise
+`--min-area` or drop them by size if it matters.
 
 ## 2. Free PDF downloads — usually personal-use
 
