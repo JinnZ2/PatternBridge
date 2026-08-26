@@ -31,7 +31,7 @@ try:
 except ImportError:
     raise ImportError(
         "reportlab is required for PDFWriter. "
-        "Install with: pip install reportlab"
+        'Install with: pip install "patternbridge[pdf]"'
     )
 
 from pattern_geometry.piece import PatternPiece, Point

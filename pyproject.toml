@@ -1,32 +1,87 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "patternbridge"
 version = "0.1.0"
-description = "Parametric sewing pattern generation from images"
+description = "Turn sewing patterns into geometry you can resize, encode, and re-print"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
-dependencies = [
-    "anthropic>=0.30.0",
-    "Pillow>=10.0.0",
-    "numpy>=1.24.0",
-    "scipy>=1.10.0",
-    "shapely>=2.0.0",
-    "svgwrite>=1.4.0",
-    "reportlab>=4.0.0",
+authors = [{ name = "JinnZ2" }]
+keywords = [
+    "sewing",
+    "sewing-patterns",
+    "pattern-making",
+    "pattern-grading",
+    "parametric-design",
+    "computational-geometry",
+    "svg",
+    "digitization",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Artistic Software",
+    "Topic :: Multimedia :: Graphics :: Editors :: Vector-Based",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Operating System :: OS Independent",
 ]
 
+# The geometry core is the whole package's floor: boundaries, encoding, and
+# grading need numpy and nothing else. Everything that talks to a file format,
+# a web API, or a GPU is an extra, so `pip install patternbridge` stays small
+# enough to be worth trying.
+dependencies = ["numpy>=1.24.0"]
+
+[project.urls]
+Homepage = "https://github.com/JinnZ2/PatternBridge"
+Repository = "https://github.com/JinnZ2/PatternBridge"
+Issues = "https://github.com/JinnZ2/PatternBridge/issues"
+
 [project.optional-dependencies]
+# Writing patterns out.
+svg = ["svgwrite>=1.4.0"]
+pdf = ["reportlab>=4.0.0"]
+# Reading patterns in from photographs, via a vision model.
+vision = ["anthropic>=0.30.0", "Pillow>=10.0.0"]
 openai = ["openai>=1.0.0"]
-classifier = ["torch>=2.0.0", "torchvision>=0.15.0"]
-dev = ["pytest>=7.0.0"]
+# Training and running the piece classifier.
+classifier = ["torch>=2.0.0", "torchvision>=0.15.0", "Pillow>=10.0.0"]
+# Data-collection tooling: capture server, pattern fetcher, PDF extractor.
+tools = ["flask>=3.0.0", "requests>=2.31.0", "pymupdf>=1.23.0", "Pillow>=10.0.0"]
+
 all = [
+    "svgwrite>=1.4.0",
+    "reportlab>=4.0.0",
+    "anthropic>=0.30.0",
+    "Pillow>=10.0.0",
     "openai>=1.0.0",
     "torch>=2.0.0",
     "torchvision>=0.15.0",
+    "flask>=3.0.0",
+    "requests>=2.31.0",
+    "pymupdf>=1.23.0",
+]
+
+# Everything the test suite actually exercises, so the README's
+# "pip install -e '.[dev]' && pytest" is honest on a clean machine. Deliberately
+# excludes `classifier`: torch is ~800MB and the tests that touch it are
+# import-guarded, so pulling it in would slow every CI run to prove nothing.
+# Install ".[dev,classifier]" when working on the classifier itself.
+dev = [
+    "patternbridge[svg,pdf,vision,openai,tools]",
+    "pytest>=7.0.0",
+    "build>=1.0.0",
+    "twine>=5.0.0",
 ]
 
 [tool.setuptools.packages.find]

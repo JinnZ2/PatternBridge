@@ -1,14 +1,21 @@
 # PatternBridge dependencies
 # Python 3.10+ required
+#
+# This file installs everything, which is convenient when working in a clone.
+# Installing the package instead lets you take only what you need:
+#
+#   pip install patternbridge              # geometry core, numpy only
+#   pip install "patternbridge[svg]"       # + SVG output
+#   pip install "patternbridge[all]"       # everything below, plus torch
+#
+# See pyproject.toml for the full list of extras.
+
+# Geometry layer — the only hard requirement
+numpy>=1.24.0
 
 # Vision layer
 anthropic>=0.30.0
 Pillow>=10.0.0
-
-# Geometry layer
-numpy>=1.24.0
-scipy>=1.10.0
-shapely>=2.0.0
 
 # Output layer
 svgwrite>=1.4.0

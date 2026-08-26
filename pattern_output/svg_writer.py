@@ -27,7 +27,7 @@ try:
 except ImportError:
     raise ImportError(
         "svgwrite is required for SVGWriter. "
-        "Install with: pip install svgwrite"
+        'Install with: pip install "patternbridge[svg]"'
     )
 
 from pattern_geometry.piece import PatternPiece, Point, Notch, Dart

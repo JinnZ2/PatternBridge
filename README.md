@@ -32,9 +32,30 @@ muscle, is a parameter rather than an afternoon with a ruler.
 ## Quick start
 
 ```bash
+pip install patternbridge
+```
+
+> Not on PyPI yet — the first release hasn't been cut. Until then, clone and
+> install from source as shown below. *(Delete this note once released.)*
+
+That gets the geometry core — boundaries, encoding, grading, SVG import —
+which needs only numpy. Everything that touches a file format, a web API or a
+GPU is an extra, so you take what you need:
+
+| Install | Adds |
+|---|---|
+| `pip install "patternbridge[svg]"` | SVG output |
+| `pip install "patternbridge[pdf]"` | tiled PDF output |
+| `pip install "patternbridge[vision]"` | reading patterns from photos, via Claude |
+| `pip install "patternbridge[tools]"` | capture server, pattern fetcher, PDF extractor |
+| `pip install "patternbridge[all]"` | all of it, including the classifier |
+
+Working on it rather than with it:
+
+```bash
 git clone https://github.com/JinnZ2/PatternBridge && cd PatternBridge
 pip install -e ".[dev]"
-pytest tests/ -q          # 457 tests
+pytest tests/ -q          # 464 tests
 python examples/quick_start.py
 ```
 
@@ -133,7 +154,7 @@ the author actually holds.
 ## Status
 
 Working: geometry import, encoding, grading, SVG/PDF/JSON output, the PDF
-extractor and licence triage, SVG import, 457 passing tests.
+extractor and licence triage, SVG import, 464 passing tests.
 
 Not yet proven: the vision layer has been built and unit-tested but not
 validated against a real corpus of photographed patterns — that needs training
@@ -149,6 +170,9 @@ honestly.
 
 Bug reports and geometry fixes equally welcome. `pytest tests/ -q` before
 opening a PR.
+
+Releases are cut from GitHub Releases and published to PyPI automatically —
+see [`RELEASING.md`](RELEASING.md).
 
 ## Ecosystem
 

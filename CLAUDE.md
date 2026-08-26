@@ -27,7 +27,8 @@ PatternBridge/
 ├── README.md                       # Project front door: quickstart, what's inside, licensing stance
 ├── LICENSE                         # MIT (code only)
 ├── DATA_LICENSE.md                 # data/ keeps each publisher's own terms
-├── requirements.txt                # Python dependencies
+├── requirements.txt                # Python dependencies (everything, for clones)
+├── RELEASING.md                    # PyPI release process; phone-friendly after setup
 ├── pyproject.toml                  # Package configuration (pip installable)
 ├── .gitignore                      # Git ignore rules
 │
@@ -64,7 +65,7 @@ PatternBridge/
 ├── patterns/
 │   └── __init__.py                 # Synthetic sample data (8 garment pieces)
 │
-├── tests/                          # Unit tests (457 tests, all passing)
+├── tests/                          # Unit tests (464 tests, all passing)
 │   ├── __init__.py
 │   ├── conftest.py                 # Shared fixtures (pieces, vision results)
 │   ├── test_vision.py              # Rubric, scoring, prompt evaluator
@@ -91,7 +92,8 @@ PatternBridge/
 │   └── img/                        # README artwork, rendered from open geometry
 │
 ├── .github/
-│   └── workflows/tests.yml         # CI: install, tests on 3.10/3.12, run every example
+│   ├── workflows/tests.yml         # CI: install, tests on 3.10/3.12, run every example
+│   └── workflows/publish.yml       # Release → PyPI via Trusted Publishing (no token)
 │
 ├── tools/
 │   ├── __init__.py
@@ -215,32 +217,39 @@ Built-in measurement profiles:
 
 ## Dependencies
 
-### Required (see requirements.txt)
+### Required
 
-```
-# Vision
-anthropic          # Claude API for pattern analysis
-Pillow             # Image loading and base64 encoding
+**`numpy` only.** The geometry core — `piece`, `encoder`, `scaler`,
+`spatial_grid`, `symmetry_detector`, `octahedral_state`, plus
+`tools/import_svg_patterns.py` and `pattern_output/data_export.py` — runs on
+numpy and the standard library. Everything else is an extra in
+`pyproject.toml`:
 
-# Geometry
-numpy              # Spatial math, polygon operations
-scipy              # Curve fitting, Gaussian smoothing
-shapely            # Computational geometry (used in encoder)
+| Extra | Packages | Used by |
+|---|---|---|
+| `svg` | svgwrite | `pattern_output/svg_writer.py` |
+| `pdf` | reportlab | `pattern_output/pdf_writer.py` |
+| `vision` | anthropic, Pillow | `prompt_evaluator.py`, `preprocessor.py` |
+| `openai` | openai | GPT-4o provider in `prompt_evaluator.py` |
+| `classifier` | torch, torchvision, Pillow | `classifier.py`, `dataset.py`, `train.py` |
+| `tools` | flask, requests, pymupdf, Pillow | `capture_server.py`, `fetch_patterns.py`, `extract_pdf_patterns.py` |
+| `all` | all of the above | — |
+| `dev` | everything except torch, plus pytest/build/twine | CI and local work |
 
-# Output
-svgwrite           # SVG generation
-reportlab          # PDF generation
+`requirements.txt` still installs everything at once, which is convenient in a
+clone.
 
-# Tools
-flask              # Mobile capture server
-requests           # Pattern fetcher (open-source image downloads)
-pymupdf            # Pattern PDF piece extraction
+**Do not import an extra from the core.** `pattern_output/__init__.py` resolves
+`SVGWriter` and `PDFWriter` lazily via PEP 562 `__getattr__` for exactly this
+reason — importing them eagerly made pure-stdlib `data_export` require both
+svgwrite and reportlab. CI installs the package bare and imports the core to
+catch a regression here.
 
-# Optional
-openai             # GPT-4o support
-torch, torchvision # CNN classifier (training + inference)
-ezdxf              # DXF export (future)
-```
+`scipy` and `shapely` were listed as required for a long time and are **not
+imported anywhere** — CLAUDE.md previously claimed shapely was "used in
+encoder", which was wrong. Both have been dropped.
+
+`ezdxf` is a possible future dependency for DXF export; nothing uses it yet.
 
 ### External repo dependency
 Four classes from **Geometric-to-Binary-Computational-Bridge** are ported into `pattern_geometry/`:
@@ -260,7 +269,7 @@ Requires **Python 3.10+** (uses `X | Y` union syntax and `from __future__ import
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all tests (457 tests)
+# Run all tests (464 tests)
 pytest tests/ -v
 
 # Run by layer

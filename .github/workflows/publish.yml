@@ -1,0 +1,83 @@
+name: publish
+
+# Publishing is deliberately driven by GitHub Releases rather than by pushes
+# to a branch. Drafting a release is a web form, so a release can be cut from a
+# phone; nothing reaches PyPI until someone deliberately publishes one.
+on:
+  release:
+    types: [published]
+  # Build and verify without publishing, to rehearse a release safely.
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      # Never publish a version the tests do not pass on.
+      - name: Tests
+        run: pytest tests/ -q
+
+      # A release tag that disagrees with pyproject.toml means the wrong
+      # version is about to go out under the right name — and a PyPI version
+      # number can never be reused. Cheaper to fail here.
+      - name: Check the tag matches the packaged version
+        if: github.event_name == 'release'
+        run: |
+          packaged=$(python -c "import tomllib,pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          tagged="${GITHUB_REF_NAME#v}"
+          echo "pyproject.toml: $packaged"
+          echo "release tag:    $tagged"
+          if [ "$packaged" != "$tagged" ]; then
+            echo "::error::Tag '$GITHUB_REF_NAME' does not match version '$packaged' in pyproject.toml."
+            exit 1
+          fi
+
+      - name: Build
+        run: |
+          python -m build
+          python -m twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    # Only a published release ships. A manual run stops after build above,
+    # which is what makes workflow_dispatch a safe rehearsal.
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+
+    # Names the deployment on the repo's Environments page, and gives somewhere
+    # to add an approval gate later if releases should need a second pair of
+    # eyes. The name must match the environment configured on PyPI.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/patternbridge
+
+    # PyPI Trusted Publishing: this token is what proves to PyPI that the build
+    # came from this workflow in this repository. It replaces an API token
+    # entirely — there is no secret stored anywhere in this repo.
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
