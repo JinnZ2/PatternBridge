@@ -483,6 +483,31 @@ class TestLicenseCheck(TestCase):
         )
         self.assertEqual(res.personalization, [])
 
+    def test_compliance_boilerplate_is_not_a_watermark(self):
+        # Every federally funded US publication carries the USDA
+        # non-discrimination statement. Reading that as a buyer watermark
+        # tells someone a free public document was something they bought.
+        res = self._check(
+            _FILLER + " program.intake@usda.gov. See "
+            "https://www.ocio.usda.gov/document/ad-3027 for the full statement."
+        )
+        self.assertEqual(res.personalization, [])
+
+    def test_subdomain_url_covers_the_address_domain(self):
+        # ocio.usda.gov in the text vouches for an address at usda.gov.
+        res = self._check(_FILLER + " reach jane.doe@usda.gov via https://www.ocio.usda.gov/x")
+        self.assertEqual(res.personalization, [])
+
+    def test_role_mailbox_is_never_a_watermark(self):
+        for mailbox in ("info", "support", "orders", "noreply"):
+            with self.subTest(mailbox=mailbox):
+                res = self._check(_FILLER + f" write to {mailbox}@somewhere-else.example")
+                self.assertEqual(res.personalization, [])
+
+    def test_personal_address_on_an_unrelated_domain_is_still_caught(self):
+        res = self._check(_FILLER + " sold to jane.smith@gmail.com on 14 Nov 2021")
+        self.assertTrue(res.personalization)
+
     def test_licensed_to_line_is_reported(self):
         res = self._check(_FILLER + " Licensed to Jane Smith, order #44812")
         self.assertTrue(res.personalization)

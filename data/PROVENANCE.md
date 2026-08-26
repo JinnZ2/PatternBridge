@@ -53,6 +53,8 @@ The copyright line printed in each source PDF:
 | The Crafty Kitty Bear & Fox welly liners | `Copyright 2014 The Crafty Kitty` — *"For Personal Use only"* | **no** |
 | So Sew Easy fur boots | `Copyright 2017 So Sew Easy Pte Ltd` — *"do not copy, publish, sell, redistribute"*; **watermarked with the buyer's email** | **no** |
 | S5474 sleeveless sundress (m-sewing.com CAD) | none — but S5474 is a Simplicity commercial pattern number | **no** — *removed*, see below |
+| UAF CCM-00072 "The Cloth Parka" | none — University of Alaska Fairbanks Cooperative Extension, published with the USDA | **no** — provenance unknown |
+| DRCOS Ladies' Coat | none — names dr-cos.info | **no** — provenance unknown |
 
 The line drawn here: a pattern is held back when its own text forbids sharing
 or restricts use to the person who downloaded it. A generic "all rights
@@ -171,6 +173,20 @@ sources with their licensing, and flags the ones whose stated terms do not
 hold up. Start there rather than hunting.
 
 ## Personalised copies
+
+A watermark is a **personal** mailbox on a domain the document never mentions.
+Two things are deliberately not treated as watermarks, because calling them
+one would tell someone a free document was something they paid for:
+
+- a **role mailbox** — `info@`, `support@`, `orders@`, `program.intake@`
+- an address whose domain appears anywhere in the document as a website,
+  subdomains included, so `ocio.usda.gov` in a link vouches for `@usda.gov`
+
+The second case is not hypothetical: every federally funded US publication
+carries the USDA non-discrimination statement, and an early version of this
+check flagged a free University of Alaska extension booklet as a purchase
+because of it.
+
 
 Some paid patterns stamp every page with the buyer's email address and
 purchase date. `--check` reports those as `PERSONALISED`, which outranks every

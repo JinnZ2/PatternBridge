@@ -991,6 +991,79 @@ M_SEWING_S5474_SUNDRESS = PatternPDF(
 )
 
 
+
+# A University of Alaska Fairbanks Cooperative Extension publication on the
+# traditional Alaska Native cloth parka. The pattern is a reduced scale drawing
+# on a 4-inch grid, six pieces across one spread, nested sizes 12/14/16.
+UAF_CLOTH_PARKA = PatternPDF(
+    key="uaf_cloth_parka",
+    filename="CCM00072ClothParka.pdf",
+    sha256="f340fc42d37263fb8718cb3b534d9d7d26360faab448d2470acbceeb9c85c86d",
+    title="UAF CCM-00072 'The Cloth Parka', sizes 12-16",
+    source_name="uaf_extension",
+    license="University of Alaska Fairbanks Cooperative Extension Service, "
+            "published with the USDA; no terms stated in the PDF",
+    attribution="Leif Albertson / Jane W. Windsor, UAF Cooperative Extension Service",
+    redistributable=False,
+    hold_reason="unknown-provenance",
+    notice=(
+        "No stated terms. A publicly funded extension publication is a strong "
+        "candidate for free educational reuse, and the text invites redrawing "
+        "the pattern at full size, but neither is a redistribution grant. "
+        "Worth checking UAF's publication terms before promoting it."
+    ),
+    pieces=[
+        PieceSpec("parka_hood_ruff", "jacket", "other", page=4,
+                  crop=(0.05, 0.08, 0.22, 0.85)),
+        PieceSpec("parka_front", "jacket", "front", page=4,
+                  crop=(0.18, 0.08, 0.44, 0.90), has_fold_line=True),
+        PieceSpec("parka_neck_band", "jacket", "collar", page=4,
+                  crop=(0.17, 0.77, 0.41, 0.88)),
+        PieceSpec("parka_pocket", "jacket", "pocket", page=4,
+                  crop=(0.55, 0.06, 0.69, 0.41)),
+        PieceSpec("parka_hood", "jacket", "other", page=4,
+                  crop=(0.68, 0.09, 0.90, 0.41)),
+        PieceSpec("parka_sleeve", "jacket", "sleeve", page=4,
+                  crop=(0.57, 0.32, 0.87, 0.90)),
+    ],
+)
+
+# DRCOS (dr-cos.info) tiles this coat over 24 pages, 6 columns x 4 rows, with
+# the pages running DOWN each column rather than across. The sheets overlap,
+# and the overlap is marked: every edge carries a printed "Bonding line"
+# label, so the trim box is read from those label positions rather than
+# guessed - x 21.15..591.5, y 21.55..769.6 on a 612x792 page.
+DRCOS_LADIES_COAT = PatternPDF(
+    key="drcos_ladies_coat",
+    filename="coatenll.pdf",
+    sha256="ed51872703b073383e673da07d5cd559bfcd92eb53856fd87c43ee24428e4d58",
+    title="DRCOS Ladies' Coat, size L",
+    source_name="drcos",
+    license="no copyright notice or terms in PDF; dr-cos.info",
+    attribution="DRCOS Patterns & How To Make (dr-cos.info)",
+    redistributable=False,
+    hold_reason="unknown-provenance",
+    notice="No stated terms.",
+    tiles=TileLayout(
+        pages=[col * 4 + row + 1 for row in range(4) for col in range(6)],
+        columns=6,
+        content_box=(21.15 / 612, 21.55 / 792, 591.5 / 612, 769.6 / 792),
+    ),
+    pieces=[
+        PieceSpec("drcos_coat_back", "jacket", "back", sheet=True,
+                  crop=(0.00, 0.00, 0.24, 1.00)),
+        PieceSpec("drcos_coat_front", "jacket", "front", sheet=True,
+                  crop=(0.21, 0.00, 0.57, 1.00)),
+        PieceSpec("drcos_coat_sleeve", "jacket", "sleeve", sheet=True,
+                  crop=(0.57, 0.00, 1.00, 0.64)),
+        PieceSpec("drcos_coat_pocket", "jacket", "pocket", sheet=True,
+                  crop=(0.53, 0.45, 0.73, 0.73)),
+        PieceSpec("drcos_coat_hood", "jacket", "other", sheet=True,
+                  crop=(0.60, 0.61, 1.00, 1.00)),
+    ],
+)
+
+
 PATTERN_PDFS: list[PatternPDF] = [
     BUTTERICK_RETRO_WRAP,
     MCCALLS_COSMETIC_BAG,
@@ -1020,6 +1093,8 @@ PATTERN_PDFS: list[PatternPDF] = [
     CRAFTY_KITTY_WELLY_LINERS,
     SOSEWEASY_FUR_BOOTS,
     M_SEWING_S5474_SUNDRESS,
+    UAF_CLOTH_PARKA,
+    DRCOS_LADIES_COAT,
 ]
 
 
@@ -1097,22 +1172,41 @@ _LICENSED_TO_RE = re.compile(
     r"sold\s+to|order\s*(?:no\.?|#|number)\s*[\w-]+)[^\n]{0,60}", re.I)
 
 
+# Addresses that belong to a role rather than a person. A watermark naming
+# the buyer is personal; a contact or compliance address is not.
+ROLE_MAILBOXES = {
+    "info", "contact", "support", "help", "sales", "admin", "office",
+    "hello", "enquiries", "inquiries", "orders", "service", "webmaster",
+    "noreply", "no-reply", "postmaster", "press", "media", "program.intake",
+}
+
+_HOSTNAME_RE = re.compile(r"(?:https?://|www\.)([\w.-]+)", re.I)
+
+
 def find_personalization(text: str) -> list[str]:
     """
     Find marks that tie this copy of a PDF to one buyer.
 
-    An email address only counts when its domain appears nowhere else in the
-    document as a site reference. A publisher printing its own contact address
-    beside its own URL is not a watermark; an address stamped on every page
-    whose domain the document never mentions is.
+    An email address only counts when it is a personal mailbox whose domain
+    appears nowhere else in the document as a website. A publisher's own
+    contact address travels with its own site, and a compliance notice — the
+    USDA statement carried by every federally funded publication, say — names
+    a role mailbox on a government domain the document already links to.
+    Neither is a watermark, and calling one a watermark is worse than useless:
+    it tells someone a free document was something they bought.
     """
     marks: list[str] = []
-    lowered = text.lower()
+
+    # Every hostname the document mentions, so an address can be matched
+    # against them allowing subdomains: ocio.usda.gov covers usda.gov.
+    hosts = {h.lower().rstrip(".") for h in _HOSTNAME_RE.findall(text)}
 
     for address in dict.fromkeys(_EMAIL_RE.findall(text)):
-        domain = address.split("@")[-1].lower()
-        # The publisher's own address travels with its own site.
-        if f"//{domain}" in lowered or f"www.{domain}" in lowered:
+        mailbox, _, domain = address.partition("@")
+        domain = domain.lower().rstrip(".")
+        if mailbox.lower() in ROLE_MAILBOXES:
+            continue
+        if any(host == domain or host.endswith("." + domain) for host in hosts):
             continue
         marks.append(f"stamped with {address}")
 
@@ -1246,8 +1340,8 @@ def print_checks(checks: list[LicenseCheck]) -> None:
             # carries personal data that must never reach a public repo.
             flag = "PERSONALISED"
             note = check.personalization[0]
-            hint = ("this copy was almost certainly bought, and the mark is "
-                    "your own data — keep it local")
+            hint = ("a per-buyer mark: this copy was very likely paid for, and "
+                    "the mark is someone's personal data — keep it local")
             print(f"{flag:13s} {check.path.name}")
             print(f"{'':13s} {note}")
             if check.identity:
