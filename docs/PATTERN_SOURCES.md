@@ -26,7 +26,7 @@ and machine-readable output rather than a flattened PDF.
 
 | Resource | What it is | License | Status |
 |---|---|---|---|
-| [FreeSewing](https://freesewing.org) | Web app + open-source codebase that drafts made-to-measure patterns from your measurements — menswear, womenswear, accessories, blocks/slopers | MIT (code); CC-BY (patterns/content) | as claimed |
+| [FreeSewing](https://freesewing.org) | Web app + open-source codebase that drafts made-to-measure patterns from your measurements — menswear, womenswear, accessories, blocks/slopers | MIT (code); CC-BY (patterns/content) | **tested — SVG import verified** |
 | [GitHub `sewing-patterns` topic](https://github.com/topics/sewing-patterns) | Pattern generators, PDF tilers, SVG linters, foundation-paper-piecing tools | Varies — mostly MIT / GPL / CC, check each repo | as claimed |
 | [Garment Pattern Generator](https://github.com/maria-korosteleva/Garment-Pattern-Generator) | Research tool generating 3D garment datasets with sewing patterns | MIT, © 2021 Maria Korosteleva | **tested — imported** |
 
@@ -37,10 +37,81 @@ exact panel geometry — vertices plus an edge loop with Bézier curvature — w
 pattern data in the project.
 
 FreeSewing is the strongest fit for PatternBridge specifically. It emits
-**SVG**, not a scanned raster — which means the geometry can go straight into
-`pattern_geometry/` without the vision layer or any tile-assembly guesswork.
-`tools/fetch_patterns.py` already has FreeSewing entries in its source
-registry.
+**SVG**, not a scanned raster, so its geometry goes straight into
+`pattern_geometry/` with no vision layer and no tile-assembly guesswork:
+
+```bash
+python -m tools.import_svg_patterns aaron.svg --list
+```
+
+The importer is built against FreeSewing's **actual** output, read from
+`packages/core/src/svg.mjs` in their source rather than guessed:
+
+| What FreeSewing emits | How the importer reads it |
+|---|---|
+| `width`/`height` in mm with a matching `viewBox` | one user unit = 1 mm, so sizes land in true inches |
+| groups named `fs-stack-<id>-part-<design>.<name>` | piece name taken from after the last `-part-`, design namespace dropped |
+| a configurable `idPrefix` (default `fs-`) | prefix-agnostic — any prefix resolves |
+| every path auto-numbered `fs-1`, `fs-2`, … | ignored; the enclosing group names the piece |
+| `embed: true`, which drops `width`/`height` | still read as mm, not CSS pixels |
+| helper lines drawn as open paths | skipped — only closed outlines become pieces |
+
+**Validated against a real export.** An Aaron v4.10.1 was exported both tiled
+and untiled, converted to SVG and read back. The untiled sheet puts the whole
+pattern on one page with no clipping, so every piece comes out at its real
+size. FreeSewing prints a calibration box and states its true size on the
+sheet, which makes it self-declared ground truth for path parsing, transform
+composition and unit scaling at once:
+
+| Shape | FreeSewing says | Importer read |
+|---|---|---|
+| calibration box, outer | 4in x 2in | **101.6 x 50.8 mm** (4.000 x 2.000 in) |
+| calibration box, inner | 10cm x 5cm | **100.0 x 50.0 mm** |
+| neck binding width | 60 mm | **60.0 mm** |
+| arm binding width | 60 mm | **60.0 mm** |
+| front / back | — | 225.7 x 485.5 mm, correct for the stated 830 mm chest |
+
+All four Aaron pieces came back, at true size, from a single command.
+
+Two things that only a real file exposed, both now fixed and pinned by tests:
+a PDF-derived SVG hides a page-sized rectangle in `<clipPath>` and every glyph
+outline in `<defs>`, and the importer was reading those as pattern pieces; and
+FreeSewing writes `V`/`H` shorthand with no separator before the digits.
+
+**Validated against FreeSewing's own SVG, not just its PDF.** The table above
+was originally read from FreeSewing's source. It has since been checked against
+the renderer itself: `@freesewing/aaron@4.10.1` and `@freesewing/core` were
+installed from npm and drafted directly, so the file below is what FreeSewing
+writes, with no PDF round-trip in between:
+
+```bash
+python -m tools.import_svg_patterns aaron-native.svg --list
+```
+
+| Shape | True size | Importer read |
+|---|---|---|
+| calibration box, outer | 4in x 2in | **101.60 x 50.80 mm** |
+| calibration box, inner | 10cm x 5cm | **100.00 x 50.00 mm** |
+| neck binding width | 60 mm | **60.00 mm** |
+| arm binding width | 60 mm | **60.00 mm** |
+
+Rendering with `embed: true`, which drops `width` and `height` entirely, gives
+byte-for-byte the same measurements — so reading an embedded sheet as
+millimetres rather than CSS pixels is now confirmed against the real output
+rather than inferred from source.
+
+The real file exposed one thing the fixture could not. FreeSewing namespaces
+every part by its design, so the group is
+`fs-stack-aaron.back-part-aaron.back`, and pieces were coming out named
+`AARON.BACK` rather than `BACK`. The design is already known from the file, so
+the namespace is now dropped.
+
+Two caveats remain. The printed **calibration box** is two closed rectangles
+sitting inside a part's group, so it imports as two extra pieces named after
+that part — on the Aaron above, `BACK` at 4 x 2 in and `BACK` at 3.94 x 1.97
+in. The sheet **logo** behaves the same way on PDF-derived files. Nothing in
+the geometry distinguishes either from a small pattern piece; raise
+`--min-area` or drop them by size if it matters.
 
 ## 2. Free PDF downloads — usually personal-use
 
@@ -59,6 +130,16 @@ land in `data_local/` rather than `data/`.
 | [French Navy](https://frenchnavy.co.za) | South African indie label; sells patterns and gives some away | **tested** — the Orla dress PDF states no terms |
 | Bombazine | Fabric shop project patterns | **tested** — the oven mitt PDF states no terms |
 | Sew Mag (UK) / Love Sewing Mag | Regular free PDF drops from UK sewing magazines | as claimed |
+| [UAF Cooperative Extension](https://www.uaf.edu/ces/publications/) | Free public-interest publications, including CCM-00072 *The Cloth Parka* | **tested** — free download, no terms in the PDF |
+
+**The UAF parka is worth going to the source for.** It is a free Cooperative
+Extension publication of a traditional Alaska Native garment, offered as an
+educational resource. This repo links it rather than republishing it: the
+document carries no licence of its own, and a sibling UAF project's CC BY-NC
+terms do not extend to it. Download it from UAF directly. Note that it is a
+reduced **scale drawing on a 4-inch grid**, not a print-and-tape sheet — you
+redraw it full size rather than taping pages together. `data/PROVENANCE.md`
+records the full reasoning.
 
 ## 3. Vintage and older catalogues
 

@@ -89,7 +89,9 @@ class TestRegistry(TestCase):
         for pattern in PATTERN_PDFS:
             if not pattern.redistributable:
                 self.assertIn(
-                    pattern.hold_reason, ("terms", "unknown-provenance"), pattern.key
+                    pattern.hold_reason,
+                    ("terms", "unknown-provenance", "no-grant"),
+                    pattern.key,
                 )
 
     def test_publishable_entries_carry_no_hold_reason(self):
@@ -102,6 +104,21 @@ class TestRegistry(TestCase):
         for pattern in PATTERN_PDFS:
             if pattern.hold_reason == "unknown-provenance":
                 self.assertFalse(pattern.redistributable, pattern.key)
+
+    def test_no_grant_entries_are_still_skipped_by_default(self):
+        # The softest hold of the three: publisher known, download free, use
+        # clearly invited — and still no licence granting redistribution.
+        # "Probably fine" is not a grant, so these are held too.
+        for pattern in PATTERN_PDFS:
+            if pattern.hold_reason == "no-grant":
+                self.assertFalse(pattern.redistributable, pattern.key)
+
+    def test_a_known_free_publisher_is_not_filed_as_unknown_provenance(self):
+        # The UAF parka's origin is settled: a free Cooperative Extension
+        # publication. Leaving it under "unknown-provenance" would misreport
+        # why it is held and quietly imply it might have been bought.
+        parka = next(p for p in PATTERN_PDFS if p.key == "uaf_cloth_parka")
+        self.assertEqual(parka.hold_reason, "no-grant")
 
     def test_restricted_entries_carry_a_notice(self):
         for pattern in PATTERN_PDFS:
@@ -482,6 +499,31 @@ class TestLicenseCheck(TestCase):
             _FILLER + " Questions? angel@fleecefun.com or visit www.fleecefun.com"
         )
         self.assertEqual(res.personalization, [])
+
+    def test_compliance_boilerplate_is_not_a_watermark(self):
+        # Every federally funded US publication carries the USDA
+        # non-discrimination statement. Reading that as a buyer watermark
+        # tells someone a free public document was something they bought.
+        res = self._check(
+            _FILLER + " program.intake@usda.gov. See "
+            "https://www.ocio.usda.gov/document/ad-3027 for the full statement."
+        )
+        self.assertEqual(res.personalization, [])
+
+    def test_subdomain_url_covers_the_address_domain(self):
+        # ocio.usda.gov in the text vouches for an address at usda.gov.
+        res = self._check(_FILLER + " reach jane.doe@usda.gov via https://www.ocio.usda.gov/x")
+        self.assertEqual(res.personalization, [])
+
+    def test_role_mailbox_is_never_a_watermark(self):
+        for mailbox in ("info", "support", "orders", "noreply"):
+            with self.subTest(mailbox=mailbox):
+                res = self._check(_FILLER + f" write to {mailbox}@somewhere-else.example")
+                self.assertEqual(res.personalization, [])
+
+    def test_personal_address_on_an_unrelated_domain_is_still_caught(self):
+        res = self._check(_FILLER + " sold to jane.smith@gmail.com on 14 Nov 2021")
+        self.assertTrue(res.personalization)
 
     def test_licensed_to_line_is_reported(self):
         res = self._check(_FILLER + " Licensed to Jane Smith, order #44812")
